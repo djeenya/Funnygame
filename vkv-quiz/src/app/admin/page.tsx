@@ -16,6 +16,8 @@ import {
   Layers,
   ChevronRight,
   ChevronLeft,
+  ChevronUp,
+  ChevronDown,
   Sparkles,
   Zap,
   MessageSquareQuote,
@@ -192,6 +194,7 @@ export default function AdminPage() {
   const [submittingGame, setSubmittingGame] = useState<boolean>(false);
   const [submittingRound, setSubmittingRound] = useState<boolean>(false);
   const [creatingDemoGame, setCreatingDemoGame] = useState<boolean>(false);
+  const [reorderingRounds, setReorderingRounds] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
@@ -475,10 +478,60 @@ export default function AdminPage() {
       const { error } = await supabase.from("rounds").delete().eq("id", roundId);
       if (error) throw error;
       setSuccessMessage("Раунд видалено.");
-      if (selectedGame) await fetchRounds(selectedGame.id);
+      if (selectedGame) {
+        // Fetch and re-index remaining rounds sequentially
+        const { data } = await supabase
+          .from("rounds")
+          .select("*")
+          .eq("game_id", selectedGame.id)
+          .order("order_index", { ascending: true });
+        if (data && data.length > 0) {
+          const reindexed = data.map((r: any, i: number) => ({ id: r.id, order_index: i }));
+          await Promise.all(
+            reindexed.map((r: any) =>
+              supabase.from("rounds").update({ order_index: r.order_index }).eq("id", r.id)
+            )
+          );
+        }
+        await fetchRounds(selectedGame.id);
+      }
     } catch (err: any) {
       console.error("handleDeleteRound error:", err);
       setErrorMessage(err.message);
+    }
+  };
+
+  const handleMoveRound = async (index: number, direction: "up" | "down") => {
+    const targetIndex = direction === "up" ? index - 1 : index + 1;
+    if (targetIndex < 0 || targetIndex >= rounds.length) return;
+
+    const roundA = rounds[index];
+    const roundB = rounds[targetIndex];
+    if (!roundA || !roundB) return;
+
+    // Optimistically reorder array locally
+    const updated = [...rounds];
+    updated[index] = roundB;
+    updated[targetIndex] = roundA;
+
+    // Recalculate order_index sequentially
+    const reindexed = updated.map((r, i) => ({ ...r, order_index: i }));
+    setRounds(reindexed);
+
+    try {
+      setReorderingRounds(true);
+      const updates = reindexed.map((r) =>
+        supabase.from("rounds").update({ order_index: r.order_index }).eq("id", r.id)
+      );
+      const results = await Promise.all(updates);
+      const errorResult = results.find((res) => res.error);
+      if (errorResult && errorResult.error) throw errorResult.error;
+    } catch (err: any) {
+      console.error("handleMoveRound error:", err);
+      setErrorMessage("Помилка зміни порядку раундів: " + err.message);
+      if (selectedGame) await fetchRounds(selectedGame.id);
+    } finally {
+      setReorderingRounds(false);
     }
   };
 
@@ -837,12 +890,36 @@ export default function AdminPage() {
                             </span>
                           </div>
                         </div>
-                        <button
-                          onClick={() => handleDeleteRound(round.id, idx)}
-                          className="p-1.5 text-zinc-500 hover:text-rose-400 transition cursor-pointer"
-                        >
-                          <Trash2 size={13} />
-                        </button>
+                        <div className="flex items-center gap-1">
+                          <button
+                            type="button"
+                            disabled={idx === 0 || reorderingRounds}
+                            onClick={() => handleMoveRound(idx, "up")}
+                            className="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800/80 disabled:opacity-20 disabled:hover:bg-transparent disabled:hover:text-zinc-400 disabled:cursor-not-allowed transition cursor-pointer"
+                            title="Перемістити раунд вгору"
+                          >
+                            <ChevronUp size={14} />
+                          </button>
+
+                          <button
+                            type="button"
+                            disabled={idx === rounds.length - 1 || reorderingRounds}
+                            onClick={() => handleMoveRound(idx, "down")}
+                            className="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800/80 disabled:opacity-20 disabled:hover:bg-transparent disabled:hover:text-zinc-400 disabled:cursor-not-allowed transition cursor-pointer"
+                            title="Перемістити раунд вниз"
+                          >
+                            <ChevronDown size={14} />
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteRound(round.id, idx)}
+                            className="p-1.5 rounded-lg text-zinc-500 hover:text-rose-400 hover:bg-rose-950/30 transition cursor-pointer ml-1"
+                            title="Видалити раунд"
+                          >
+                            <Trash2 size={13} />
+                          </button>
+                        </div>
                       </div>
                     ))
                   )}

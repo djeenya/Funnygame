@@ -406,6 +406,7 @@ export default function GamePage() {
 
   const startGame = async () => {
     if (!selectedGameId) return;
+    resetScores(true); // Автоматичне скидання рахунку до 0:0 при старті нової гри
     if (rounds.length === 0) {
       await fetchRoundsForGame(selectedGameId);
     }
@@ -520,9 +521,16 @@ export default function GamePage() {
     }
   };
 
-  const resetScores = () => {
-    if (confirm("Скинути рахунок обох команд до 0 : 0?")) {
+  const resetScores = (force = false) => {
+    if (force || (typeof window !== "undefined" && window.confirm("Скинути рахунок обох команд до 0?"))) {
       setScores({ team1: 0, team2: 0 });
+      if (typeof window !== "undefined") {
+        try {
+          localStorage.setItem("vkv_scores", JSON.stringify({ team1: 0, team2: 0 }));
+        } catch (e) {
+          console.error(e);
+        }
+      }
       playBeep(400, 0.2, "sine");
     }
   };
@@ -754,15 +762,15 @@ export default function GamePage() {
                     playBeep(650, 0.1, "sine");
                   }}
                   className={`p-4 sm:p-5 rounded-2xl text-left transition flex flex-col justify-between min-h-[130px] sm:min-h-[140px] relative overflow-hidden shadow-xl ${isPlayed
-                      ? "bg-zinc-950/60 border border-zinc-900 text-zinc-600 opacity-40 cursor-not-allowed"
-                      : "bg-gradient-to-br from-amber-400 via-amber-500 to-orange-500 hover:from-amber-300 hover:via-amber-400 hover:to-orange-400 text-slate-950 border-2 border-amber-300 hover:border-white cursor-pointer hover:scale-105 active:scale-95 transition duration-200"
+                    ? "bg-zinc-950/60 border border-zinc-900 text-zinc-600 opacity-40 cursor-not-allowed"
+                    : "bg-gradient-to-br from-amber-400 via-amber-500 to-orange-500 hover:from-amber-300 hover:via-amber-400 hover:to-orange-400 text-slate-950 border-2 border-amber-300 hover:border-white cursor-pointer hover:scale-105 active:scale-95 transition duration-200"
                     }`}
                 >
                   <div className="flex items-center justify-between w-full">
                     <span
                       className={`w-7 h-7 rounded-xl flex items-center justify-center font-mono font-black text-xs shadow-inner ${isPlayed
-                          ? "bg-zinc-900 text-zinc-600 border border-zinc-800"
-                          : "bg-slate-950 text-amber-400 border border-amber-400/40"
+                        ? "bg-zinc-900 text-zinc-600 border border-zinc-800"
+                        : "bg-slate-950 text-amber-400 border border-amber-400/40"
                         }`}
                     >
                       #{idx + 1}
@@ -898,8 +906,8 @@ export default function GamePage() {
             </span>
             <span
               className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider ${easyHardDifficulty === "easy"
-                  ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
-                  : "bg-rose-500/20 text-rose-400 border border-rose-500/30"
+                ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
+                : "bg-rose-500/20 text-rose-400 border border-rose-500/30"
                 }`}
             >
               {easyHardDifficulty === "easy" ? "Легке (+1 бал)" : "Складне (+2 бали)"}
@@ -982,8 +990,8 @@ export default function GamePage() {
           <div className="flex flex-col items-center gap-3 w-full animate-fadeIn mt-2">
             <div
               className={`p-4 rounded-2xl border text-sm font-black text-center w-full shadow-lg ${easyHardJudgmentGiven
-                  ? "bg-emerald-950/40 border-emerald-500/40 text-emerald-300"
-                  : "bg-rose-950/40 border-rose-500/40 text-rose-300"
+                ? "bg-emerald-950/40 border-emerald-500/40 text-emerald-300"
+                : "bg-rose-950/40 border-rose-500/40 text-rose-300"
                 }`}
             >
               {easyHardJudgmentGiven ? (
@@ -1106,10 +1114,10 @@ export default function GamePage() {
               <div
                 key={step}
                 className={`py-2 px-1 rounded-xl border text-center transition flex flex-col items-center justify-center ${isCurrent
-                    ? "bg-rose-600 text-white border-rose-400 font-black shadow-lg shadow-rose-600/30 scale-105"
-                    : isPassed
-                      ? "bg-zinc-950 text-zinc-500 border-zinc-900 line-through opacity-60"
-                      : "bg-zinc-950/60 text-zinc-600 border-zinc-900"
+                  ? "bg-rose-600 text-white border-rose-400 font-black shadow-lg shadow-rose-600/30 scale-105"
+                  : isPassed
+                    ? "bg-zinc-950 text-zinc-500 border-zinc-900 line-through opacity-60"
+                    : "bg-zinc-950/60 text-zinc-600 border-zinc-900"
                   }`}
               >
                 <span className="text-[10px] font-mono font-bold uppercase">
@@ -1172,8 +1180,8 @@ export default function GamePage() {
                   <div
                     key={optIdx}
                     className={`p-4 sm:p-5 rounded-2xl border-2 text-left flex items-center justify-between transition ${isCorrect
-                        ? "bg-emerald-600 text-white border-emerald-300 font-black shadow-xl shadow-emerald-600/30 scale-[1.02]"
-                        : "bg-zinc-950/40 border-zinc-900 text-zinc-600 opacity-40"
+                      ? "bg-emerald-600 text-white border-emerald-300 font-black shadow-xl shadow-emerald-600/30 scale-[1.02]"
+                      : "bg-zinc-950/40 border-zinc-900 text-zinc-600 opacity-40"
                       }`}
                   >
                     <div className="flex items-center gap-3">
@@ -1264,8 +1272,8 @@ export default function GamePage() {
           <div className="flex flex-col items-center gap-3 w-full animate-fadeIn mt-2">
             <div
               className={`p-4 rounded-2xl border text-sm font-black text-center w-full shadow-lg ${commentsPointsEarned! > 0
-                  ? "bg-emerald-950/40 border-emerald-500/40 text-emerald-300"
-                  : "bg-rose-950/40 border-rose-500/40 text-rose-300"
+                ? "bg-emerald-950/40 border-emerald-500/40 text-emerald-300"
+                : "bg-rose-950/40 border-rose-500/40 text-rose-300"
                 }`}
             >
               {commentsPointsEarned! > 0 ? (
@@ -1400,10 +1408,10 @@ export default function GamePage() {
 
           <div
             className={`text-6xl sm:text-7xl font-black font-mono tracking-tight my-2 transition duration-300 ${blitz10TimeLeft === 0
-                ? "text-red-500 scale-105 drop-shadow-[0_0_12px_rgba(239,68,68,0.6)]"
-                : blitz10TimeLeft <= 3
-                  ? "text-amber-400 animate-pulse"
-                  : "text-white"
+              ? "text-red-500 scale-105 drop-shadow-[0_0_12px_rgba(239,68,68,0.6)]"
+              : blitz10TimeLeft <= 3
+                ? "text-amber-400 animate-pulse"
+                : "text-white"
               }`}
           >
             00:{blitz10TimeLeft.toString().padStart(2, "0")}
@@ -1460,8 +1468,8 @@ export default function GamePage() {
                 confetti({ particleCount: 30, spread: 50, origin: { y: 0.8 } });
               }}
               className={`p-4 rounded-xl font-black text-sm transition flex items-center justify-center gap-2 cursor-pointer border ${blitzScores[blitzQuestionIndex] === true
-                  ? "bg-emerald-600 text-white border-emerald-400 shadow-lg shadow-emerald-600/20"
-                  : "bg-emerald-950/20 hover:bg-emerald-950/40 text-emerald-400 border-emerald-500/30"
+                ? "bg-emerald-600 text-white border-emerald-400 shadow-lg shadow-emerald-600/20"
+                : "bg-emerald-950/20 hover:bg-emerald-950/40 text-emerald-400 border-emerald-500/30"
                 }`}
             >
               <CheckCircle2 size={18} /> +1 Зарахувати
@@ -1473,8 +1481,8 @@ export default function GamePage() {
                 playBuzzer();
               }}
               className={`p-4 rounded-xl font-black text-sm transition flex items-center justify-center gap-2 cursor-pointer border ${blitzScores[blitzQuestionIndex] === false
-                  ? "bg-rose-600 text-white border-rose-400 shadow-lg shadow-rose-600/20"
-                  : "bg-rose-950/20 hover:bg-rose-950/40 text-rose-400 border-rose-500/30"
+                ? "bg-rose-600 text-white border-rose-400 shadow-lg shadow-rose-600/20"
+                : "bg-rose-950/20 hover:bg-rose-950/40 text-rose-400 border-rose-500/30"
                 }`}
             >
               <XCircle size={18} /> 0 Незалік
@@ -1590,10 +1598,10 @@ export default function GamePage() {
 
           <div
             className={`text-6xl sm:text-7xl font-black font-mono tracking-tight my-2 transition duration-300 ${aliasTimeLeft === 0
-                ? "text-red-500 scale-105 drop-shadow-[0_0_12px_rgba(239,68,68,0.6)]"
-                : aliasTimeLeft <= 15
-                  ? "text-amber-400 animate-pulse"
-                  : "text-white"
+              ? "text-red-500 scale-105 drop-shadow-[0_0_12px_rgba(239,68,68,0.6)]"
+              : aliasTimeLeft <= 15
+                ? "text-amber-400 animate-pulse"
+                : "text-white"
               }`}
           >
             {formatTime(aliasTimeLeft)}
@@ -1791,6 +1799,14 @@ export default function GamePage() {
                 <span className="truncate max-w-[90px] sm:max-w-[120px]">{gameSettings.team2.name}:</span>
                 <span className="text-sm font-black font-mono">{scores.team2}</span>
               </button>
+
+              <button
+                onClick={() => resetScores(false)}
+                className="p-1.5 ml-0.5 bg-zinc-800/80 hover:bg-zinc-700/80 text-zinc-400 hover:text-amber-400 rounded-lg border border-zinc-700/50 transition cursor-pointer flex items-center justify-center group"
+                title="Скинути рахунок обох команд до 0"
+              >
+                <RotateCcw size={13} className="group-hover:rotate-[-45deg] transition-transform duration-200" />
+              </button>
             </div>
 
             <button
@@ -1973,8 +1989,8 @@ export default function GamePage() {
                   type="button"
                   onClick={() => setGameSettings((s) => ({ ...s, first_turn_team: 1 }))}
                   className={`py-2.5 px-3 rounded-xl border text-xs font-bold transition flex items-center justify-center gap-2 cursor-pointer ${gameSettings.first_turn_team === 1
-                      ? "bg-indigo-600 text-white border-indigo-400 shadow-lg shadow-indigo-600/30"
-                      : "bg-zinc-900 text-zinc-400 border-zinc-800"
+                    ? "bg-indigo-600 text-white border-indigo-400 shadow-lg shadow-indigo-600/30"
+                    : "bg-zinc-900 text-zinc-400 border-zinc-800"
                     }`}
                 >
                   <UserCheck size={14} />
@@ -1985,8 +2001,8 @@ export default function GamePage() {
                   type="button"
                   onClick={() => setGameSettings((s) => ({ ...s, first_turn_team: 2 }))}
                   className={`py-2.5 px-3 rounded-xl border text-xs font-bold transition flex items-center justify-center gap-2 cursor-pointer ${gameSettings.first_turn_team === 2
-                      ? "bg-rose-600 text-white border-rose-400 shadow-lg shadow-rose-600/30"
-                      : "bg-zinc-900 text-zinc-400 border-zinc-800"
+                    ? "bg-rose-600 text-white border-rose-400 shadow-lg shadow-rose-600/30"
+                    : "bg-zinc-900 text-zinc-400 border-zinc-800"
                     }`}
                 >
                   <UserCheck size={14} />
@@ -1996,7 +2012,7 @@ export default function GamePage() {
             </div>
 
             <div className="flex items-center justify-between pt-2 border-t border-zinc-800">
-              <button onClick={resetScores} className="text-xs text-rose-400 hover:underline cursor-pointer">
+              <button onClick={() => resetScores(false)} className="text-xs text-rose-400 hover:underline cursor-pointer">
                 Скинути рахунок до 0:0
               </button>
               <button
@@ -2054,8 +2070,8 @@ export default function GamePage() {
                       key={g.id}
                       onClick={() => handleSelectGame(g)}
                       className={`p-3.5 rounded-2xl border text-left flex items-center justify-between transition cursor-pointer ${selectedGameId === g.id
-                          ? "bg-indigo-950/40 border-indigo-500 text-white shadow-md shadow-indigo-950/30"
-                          : "bg-zinc-950/60 border-zinc-800 hover:border-zinc-700 text-zinc-300"
+                        ? "bg-indigo-950/40 border-indigo-500 text-white shadow-md shadow-indigo-950/30"
+                        : "bg-zinc-950/60 border-zinc-800 hover:border-zinc-700 text-zinc-300"
                         }`}
                     >
                       <div className="truncate">
@@ -2181,8 +2197,8 @@ export default function GamePage() {
                     type="button"
                     onClick={() => setGameSettings((s) => ({ ...s, first_turn_team: 1 }))}
                     className={`py-3 px-3 rounded-xl border text-xs font-black transition flex items-center justify-center gap-2 cursor-pointer ${gameSettings.first_turn_team === 1
-                        ? "bg-indigo-600 text-white border-indigo-400 shadow-lg shadow-indigo-600/30"
-                        : "bg-zinc-900 text-zinc-400 border-zinc-800"
+                      ? "bg-indigo-600 text-white border-indigo-400 shadow-lg shadow-indigo-600/30"
+                      : "bg-zinc-900 text-zinc-400 border-zinc-800"
                       }`}
                   >
                     <UserCheck size={14} />
@@ -2193,8 +2209,8 @@ export default function GamePage() {
                     type="button"
                     onClick={() => setGameSettings((s) => ({ ...s, first_turn_team: 2 }))}
                     className={`py-3 px-3 rounded-xl border text-xs font-black transition flex items-center justify-center gap-2 cursor-pointer ${gameSettings.first_turn_team === 2
-                        ? "bg-rose-600 text-white border-rose-400 shadow-lg shadow-rose-600/30"
-                        : "bg-zinc-900 text-zinc-400 border-zinc-800"
+                      ? "bg-rose-600 text-white border-rose-400 shadow-lg shadow-rose-600/30"
+                      : "bg-zinc-900 text-zinc-400 border-zinc-800"
                       }`}
                   >
                     <UserCheck size={14} />
