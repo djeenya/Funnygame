@@ -1943,13 +1943,15 @@ export default function GamePage() {
 
             {/* Quick Action Buttons (Right side on mobile & desktop) */}
             <div className="flex items-center gap-1.5 flex-shrink-0">
-              <button
-                onClick={() => setEditingSettingsModal(true)}
-                className="p-2 min-h-[36px] min-w-[36px] bg-zinc-900 hover:bg-zinc-800 active:scale-95 text-zinc-400 hover:text-white rounded-lg border border-zinc-800 transition cursor-pointer flex items-center justify-center"
-                title="Налаштування команд та учасників"
-              >
-                <Settings size={15} />
-              </button>
+              {gameState === "playing" && (
+                <button
+                  onClick={() => setEditingSettingsModal(true)}
+                  className="p-2 min-h-[36px] min-w-[36px] bg-zinc-900 hover:bg-zinc-800 active:scale-95 text-zinc-400 hover:text-white rounded-lg border border-zinc-800 transition cursor-pointer flex items-center justify-center animate-fadeIn"
+                  title="Налаштування команд та учасників"
+                >
+                  <Settings size={15} />
+                </button>
+              )}
 
               <button
                 onClick={() => {
@@ -2210,7 +2212,7 @@ export default function GamePage() {
                     <Sparkles size={14} /> Крок 1 з 2: Оберіть гру
                   </div>
                   <h2 className="text-xl sm:text-3xl font-black text-white uppercase tracking-tight">
-                    Оберіть гру з бази даних
+                    Оберіть гру
                   </h2>
                   <p className="text-xs sm:text-sm text-zinc-400 max-w-md mx-auto">
                     Оберіть підготовлену вікторину або перейдіть до адмінки для створення нового випуску
@@ -2260,8 +2262,8 @@ export default function GamePage() {
                           key={g.id}
                           onClick={() => handleSelectGame(g)}
                           className={`p-3 sm:p-3.5 min-h-[48px] rounded-xl sm:rounded-2xl border text-left flex items-center justify-between transition cursor-pointer active:scale-95 ${selectedGameId === g.id
-                              ? "bg-indigo-950/50 border-indigo-500 text-white shadow-md shadow-indigo-950/40 ring-1 ring-indigo-500/50"
-                              : "bg-zinc-950/60 border-zinc-800 hover:border-zinc-700 text-zinc-300"
+                            ? "bg-indigo-950/50 border-indigo-500 text-white shadow-md shadow-indigo-950/40 ring-1 ring-indigo-500/50"
+                            : "bg-zinc-950/60 border-zinc-800 hover:border-zinc-700 text-zinc-300"
                             }`}
                         >
                           <div className="truncate min-w-0 pr-2">
@@ -2285,8 +2287,8 @@ export default function GamePage() {
                   disabled={!selectedGameId || roundsLoading || games.length === 0}
                   onClick={() => setSetupStep("setup_teams")}
                   className={`w-full py-4 min-h-[52px] rounded-2xl font-black text-sm sm:text-base uppercase tracking-wider transition flex items-center justify-center gap-2 shadow-xl ${selectedGameId && !roundsLoading && games.length > 0
-                      ? "bg-gradient-to-r from-amber-500 via-orange-500 to-amber-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 shadow-amber-500/20 active:scale-[0.98] cursor-pointer"
-                      : "bg-zinc-800 text-zinc-500 border border-zinc-700/50 opacity-60 cursor-not-allowed"
+                    ? "bg-gradient-to-r from-amber-500 via-orange-500 to-amber-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 shadow-amber-500/20 active:scale-[0.98] cursor-pointer"
+                    : "bg-zinc-800 text-zinc-500 border border-zinc-700/50 opacity-60 cursor-not-allowed"
                     }`}
                 >
                   <span>Перейти до налаштування команд</span>
@@ -2304,7 +2306,7 @@ export default function GamePage() {
                     className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-300 hover:text-white text-xs font-bold transition active:scale-95 cursor-pointer min-h-[38px]"
                   >
                     <ArrowLeft size={14} />
-                    <span>← Змінити гру</span>
+                    <span>Змінити гру</span>
                   </button>
 
                   <div className="text-[10px] sm:text-xs font-bold text-zinc-400 bg-zinc-900/80 border border-zinc-800 px-3 py-2 rounded-xl truncate max-w-[200px] sm:max-w-xs min-h-[38px] flex items-center">
@@ -2451,8 +2453,8 @@ export default function GamePage() {
                         type="button"
                         onClick={() => setGameSettings((s) => ({ ...s, first_turn_team: 1 }))}
                         className={`py-2.5 sm:py-3 px-3 min-h-[44px] rounded-xl border text-xs sm:text-sm font-black transition flex items-center justify-center gap-2 cursor-pointer active:scale-95 ${gameSettings.first_turn_team === 1
-                            ? "bg-indigo-600 text-white border-indigo-400 shadow-lg shadow-indigo-600/30"
-                            : "bg-zinc-900 text-zinc-400 border-zinc-800"
+                          ? "bg-indigo-600 text-white border-indigo-400 shadow-lg shadow-indigo-600/30"
+                          : "bg-zinc-900 text-zinc-400 border-zinc-800"
                           }`}
                       >
                         <UserCheck size={14} />
@@ -2463,8 +2465,8 @@ export default function GamePage() {
                         type="button"
                         onClick={() => setGameSettings((s) => ({ ...s, first_turn_team: 2 }))}
                         className={`py-2.5 sm:py-3 px-3 min-h-[44px] rounded-xl border text-xs sm:text-sm font-black transition flex items-center justify-center gap-2 cursor-pointer active:scale-95 ${gameSettings.first_turn_team === 2
-                            ? "bg-rose-600 text-white border-rose-400 shadow-lg shadow-rose-600/30"
-                            : "bg-zinc-900 text-zinc-400 border-zinc-800"
+                          ? "bg-rose-600 text-white border-rose-400 shadow-lg shadow-rose-600/30"
+                          : "bg-zinc-900 text-zinc-400 border-zinc-800"
                           }`}
                       >
                         <UserCheck size={14} />
@@ -2490,8 +2492,8 @@ export default function GamePage() {
                   disabled={!isSetupValid || roundsLoading}
                   onClick={startGame}
                   className={`w-full py-4 min-h-[52px] rounded-2xl font-black text-sm sm:text-base uppercase tracking-wider transition flex items-center justify-center gap-2 shadow-xl ${isSetupValid && !roundsLoading
-                      ? "bg-gradient-to-r from-amber-500 via-orange-500 to-amber-500 hover:from-amber-400 hover:to-orange-400 active:scale-[0.98] text-slate-950 shadow-amber-500/20 cursor-pointer"
-                      : "bg-zinc-800 text-zinc-500 border border-zinc-700/50 opacity-60 cursor-not-allowed"
+                    ? "bg-gradient-to-r from-amber-500 via-orange-500 to-amber-500 hover:from-amber-400 hover:to-orange-400 active:scale-[0.98] text-slate-950 shadow-amber-500/20 cursor-pointer"
+                    : "bg-zinc-800 text-zinc-500 border border-zinc-700/50 opacity-60 cursor-not-allowed"
                     }`}
                 >
                   <Sparkles size={18} />
