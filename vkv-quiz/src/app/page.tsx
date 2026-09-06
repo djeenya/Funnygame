@@ -31,6 +31,9 @@ import {
   UserCheck,
   Flag,
   Sun,
+  ArrowRight,
+  ArrowLeft,
+  AlertCircle,
 } from "lucide-react";
 
 // Web Audio API procedural sound synthesizer
@@ -231,6 +234,7 @@ export default function GamePage() {
   const [rounds, setRounds] = useState<Round[]>([]);
   const [currentRoundIndex, setCurrentRoundIndex] = useState<number>(0);
   const [gameState, setGameState] = useState<"select_game" | "playing" | "finished">("select_game");
+  const [setupStep, setSetupStep] = useState<"select_game" | "setup_teams">("select_game");
 
   // Scores
   const [scores, setScores] = useState<{ team1: number; team2: number }>({ team1: 0, team2: 0 });
@@ -464,6 +468,13 @@ export default function GamePage() {
 
   const startGame = async () => {
     if (!selectedGameId) return;
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.setItem("vkv_game_settings", JSON.stringify(gameSettings));
+      } catch (e) {
+        console.error(e);
+      }
+    }
     resetScores(true); // Автоматичне скидання рахунку до 0:0 при старті нової гри
     if (rounds.length === 0) {
       await fetchRoundsForGame(selectedGameId);
@@ -622,6 +633,7 @@ export default function GamePage() {
     resetScores(true);
     setCurrentRoundIndex(0);
     resetRoundStates();
+    setSetupStep("select_game");
     setGameState("select_game");
   };
 
@@ -1887,6 +1899,17 @@ export default function GamePage() {
     );
   };
 
+  // Validation for setup step 2
+  const isTeam1Valid =
+    gameSettings.team1.name.trim().length > 0 &&
+    Boolean(gameSettings.team1.players[0]?.trim()) &&
+    Boolean(gameSettings.team1.players[1]?.trim());
+  const isTeam2Valid =
+    gameSettings.team2.name.trim().length > 0 &&
+    Boolean(gameSettings.team2.players[0]?.trim()) &&
+    Boolean(gameSettings.team2.players[1]?.trim());
+  const isSetupValid = isTeam1Valid && isTeam2Valid;
+
   // Main UI
   return (
     <div className="min-h-screen bg-slate-950 text-zinc-50 flex flex-col font-sans select-none pb-28 sm:pb-20 pb-[max(6rem,env(safe-area-inset-bottom,28px))] touch-manipulation overflow-x-hidden w-full">
@@ -1901,7 +1924,7 @@ export default function GamePage() {
               </div>
               <div className="min-w-0">
                 <div className="flex items-center gap-1.5">
-                  <h1 className="text-xs sm:text-sm font-black text-white uppercase tracking-wider truncate">Шоу ВКВ 2026</h1>
+                  <h1 className="text-xs sm:text-sm font-black text-white uppercase tracking-wider truncate">ШОУ ВКВ</h1>
                   {isWakeLockActive && (
                     <span
                       className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-[9px] font-bold shadow-sm flex-shrink-0"
@@ -1939,39 +1962,41 @@ export default function GamePage() {
             </div>
           </div>
 
-          {/* Bottom Level on Mobile / Right on Desktop: Compact Scoreboard */}
-          <div className="flex items-center justify-between sm:justify-end gap-1.5 w-full sm:w-auto">
-            <div className="flex items-center bg-zinc-900/90 border border-zinc-800 rounded-xl p-0.5 sm:p-1 gap-1 shadow-inner w-full sm:w-auto justify-between sm:justify-start">
-              <button
-                onClick={() => setScores((s) => ({ ...s, team1: s.team1 + 1 }))}
-                className="flex-1 sm:flex-initial px-2 sm:px-2.5 py-1 min-h-[36px] sm:min-h-[38px] rounded-lg bg-indigo-950/40 border border-indigo-500/30 text-indigo-400 font-bold text-xs sm:text-sm flex items-center justify-between sm:justify-start gap-1 sm:gap-1.5 cursor-pointer hover:bg-indigo-900/40 active:scale-95 transition"
-                title={`Додати бал для ${gameSettings.team1.name}`}
-              >
-                <span className="truncate max-w-[95px] xs:max-w-[120px] sm:max-w-[140px] text-left">{gameSettings.team1.name}:</span>
-                <span className="text-xs sm:text-sm font-black font-mono flex-shrink-0">{scores.team1}</span>
-              </button>
+          {/* Bottom Level on Mobile / Right on Desktop: Compact Scoreboard (Rendered ONLY when playing) */}
+          {gameState === "playing" && (
+            <div className="flex items-center justify-between sm:justify-end gap-1.5 w-full sm:w-auto animate-fadeIn">
+              <div className="flex items-center bg-zinc-900/90 border border-zinc-800 rounded-xl p-0.5 sm:p-1 gap-1 shadow-inner w-full sm:w-auto justify-between sm:justify-start">
+                <button
+                  onClick={() => setScores((s) => ({ ...s, team1: s.team1 + 1 }))}
+                  className="flex-1 sm:flex-initial px-2 sm:px-2.5 py-1 min-h-[36px] sm:min-h-[38px] rounded-lg bg-indigo-950/40 border border-indigo-500/30 text-indigo-400 font-bold text-xs sm:text-sm flex items-center justify-between sm:justify-start gap-1 sm:gap-1.5 cursor-pointer hover:bg-indigo-900/40 active:scale-95 transition"
+                  title={`Додати бал для ${gameSettings.team1.name}`}
+                >
+                  <span className="truncate max-w-[95px] xs:max-w-[120px] sm:max-w-[140px] text-left">{gameSettings.team1.name}:</span>
+                  <span className="text-xs sm:text-sm font-black font-mono flex-shrink-0">{scores.team1}</span>
+                </button>
 
-              <span className="text-zinc-600 font-bold text-xs px-0.5 flex-shrink-0">:</span>
+                <span className="text-zinc-600 font-bold text-xs px-0.5 flex-shrink-0">:</span>
 
-              <button
-                onClick={() => setScores((s) => ({ ...s, team2: s.team2 + 1 }))}
-                className="flex-1 sm:flex-initial px-2 sm:px-2.5 py-1 min-h-[36px] sm:min-h-[38px] rounded-lg bg-rose-950/40 border border-rose-500/30 text-rose-400 font-bold text-xs sm:text-sm flex items-center justify-between sm:justify-start gap-1 sm:gap-1.5 cursor-pointer hover:bg-rose-900/40 active:scale-95 transition"
-                title={`Додати бал для ${gameSettings.team2.name}`}
-              >
-                <span className="truncate max-w-[95px] xs:max-w-[120px] sm:max-w-[140px] text-left">{gameSettings.team2.name}:</span>
-                <span className="text-xs sm:text-sm font-black font-mono flex-shrink-0">{scores.team2}</span>
-              </button>
+                <button
+                  onClick={() => setScores((s) => ({ ...s, team2: s.team2 + 1 }))}
+                  className="flex-1 sm:flex-initial px-2 sm:px-2.5 py-1 min-h-[36px] sm:min-h-[38px] rounded-lg bg-rose-950/40 border border-rose-500/30 text-rose-400 font-bold text-xs sm:text-sm flex items-center justify-between sm:justify-start gap-1 sm:gap-1.5 cursor-pointer hover:bg-rose-900/40 active:scale-95 transition"
+                  title={`Додати бал для ${gameSettings.team2.name}`}
+                >
+                  <span className="truncate max-w-[95px] xs:max-w-[120px] sm:max-w-[140px] text-left">{gameSettings.team2.name}:</span>
+                  <span className="text-xs sm:text-sm font-black font-mono flex-shrink-0">{scores.team2}</span>
+                </button>
 
-              {/* Reset Scores Button */}
-              <button
-                onClick={() => resetScores(false)}
-                className="p-1.5 min-h-[36px] min-w-[34px] sm:min-w-[36px] bg-zinc-800/80 hover:bg-zinc-700/80 text-zinc-400 hover:text-amber-400 active:scale-95 rounded-lg border border-zinc-700/50 transition cursor-pointer flex items-center justify-center group flex-shrink-0"
-                title="Скинути рахунок обох команд до 0"
-              >
-                <RotateCcw size={13} className="group-hover:rotate-[-45deg] transition-transform duration-200" />
-              </button>
+                {/* Reset Scores Button */}
+                <button
+                  onClick={() => resetScores(false)}
+                  className="p-1.5 min-h-[36px] min-w-[34px] sm:min-w-[36px] bg-zinc-800/80 hover:bg-zinc-700/80 text-zinc-400 hover:text-amber-400 active:scale-95 rounded-lg border border-zinc-700/50 transition cursor-pointer flex items-center justify-center group flex-shrink-0"
+                  title="Скинути рахунок обох команд до 0"
+                >
+                  <RotateCcw size={13} className="group-hover:rotate-[-45deg] transition-transform duration-200" />
+                </button>
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </header>
 
@@ -2176,204 +2201,304 @@ export default function GamePage() {
       <main className="flex-grow max-w-4xl w-full mx-auto px-3 sm:px-4 py-4 sm:py-6 flex flex-col justify-center">
         {gameState === "select_game" && (
           <div className="flex flex-col gap-5 sm:gap-6 py-4 sm:py-6 animate-fadeIn">
-            {/* Title & Badge */}
-            <div className="text-center space-y-2">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 text-[10px] sm:text-xs font-bold uppercase tracking-widest">
-                <Sparkles size={14} /> Новий випуск вікторини ВКВ
+            {setupStep === "select_game" ? (
+              /* =================== КРОК 1: ОБЕРІТЬ ГРУ З БАЗИ ДАНИХ =================== */
+              <div className="flex flex-col gap-5 sm:gap-6 animate-fadeIn">
+                {/* Title & Badge */}
+                <div className="text-center space-y-2">
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 text-[10px] sm:text-xs font-bold uppercase tracking-widest">
+                    <Sparkles size={14} /> Крок 1 з 2: Оберіть гру
+                  </div>
+                  <h2 className="text-xl sm:text-3xl font-black text-white uppercase tracking-tight">
+                    Оберіть гру з бази даних
+                  </h2>
+                  <p className="text-xs sm:text-sm text-zinc-400 max-w-md mx-auto">
+                    Оберіть підготовлену вікторину або перейдіть до адмінки для створення нового випуску
+                  </p>
+                </div>
+
+                {/* Step Progress Indicators */}
+                <div className="flex items-center justify-center gap-2 max-w-xs mx-auto w-full">
+                  <div className="flex-1 h-1.5 rounded-full bg-amber-500 shadow-sm shadow-amber-500/50" />
+                  <div className="flex-1 h-1.5 rounded-full bg-zinc-800" />
+                </div>
+
+                {/* Game Selector Section */}
+                <div className="bg-zinc-900 border border-zinc-800 p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl space-y-2.5 sm:space-y-3 shadow-xl">
+                  <div className="flex items-center justify-between">
+                    <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest block">
+                      Список доступних ігор ({games.length})
+                    </label>
+                    {selectedGame && (
+                      <span className="text-[10px] text-amber-400 font-bold truncate max-w-[160px] sm:max-w-none">
+                        Обрано: <strong className="text-white">{selectedGame.name}</strong>
+                      </span>
+                    )}
+                  </div>
+
+                  {loading ? (
+                    <div className="py-8 text-zinc-500 flex items-center justify-center gap-2">
+                      <Loader2 size={18} className="animate-spin text-amber-400" />
+                      <span className="text-xs">Завантаження списку ігор...</span>
+                    </div>
+                  ) : games.length === 0 ? (
+                    <div className="p-6 bg-zinc-950 border border-dashed border-zinc-800 rounded-2xl text-center space-y-3">
+                      <p className="text-xs sm:text-sm text-zinc-400">В базі даних ще немає створених ігор.</p>
+                      <button
+                        onClick={() => {
+                          if (typeof window !== "undefined") window.location.href = "/admin";
+                        }}
+                        className="px-4 py-2.5 min-h-[44px] bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 font-black rounded-xl text-xs uppercase tracking-wider cursor-pointer shadow-lg active:scale-95 transition"
+                      >
+                        Перейти в адмінку
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-2.5">
+                      {games.map((g) => (
+                        <button
+                          key={g.id}
+                          onClick={() => handleSelectGame(g)}
+                          className={`p-3 sm:p-3.5 min-h-[48px] rounded-xl sm:rounded-2xl border text-left flex items-center justify-between transition cursor-pointer active:scale-95 ${selectedGameId === g.id
+                              ? "bg-indigo-950/50 border-indigo-500 text-white shadow-md shadow-indigo-950/40 ring-1 ring-indigo-500/50"
+                              : "bg-zinc-950/60 border-zinc-800 hover:border-zinc-700 text-zinc-300"
+                            }`}
+                        >
+                          <div className="truncate min-w-0 pr-2">
+                            <span className="font-extrabold text-xs sm:text-sm block truncate">{g.name}</span>
+                            {selectedGameId === g.id && (
+                              <span className="text-[9px] sm:text-[10px] text-indigo-400 font-bold block mt-0.5">
+                                {roundsLoading ? "Завантаження раундів..." : `Завантажено раундів: ${rounds.length}`}
+                              </span>
+                            )}
+                          </div>
+                          {selectedGameId === g.id && <Check size={16} className="text-indigo-400 flex-shrink-0" />}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Step 1 Next Action Button */}
+                <button
+                  type="button"
+                  disabled={!selectedGameId || roundsLoading || games.length === 0}
+                  onClick={() => setSetupStep("setup_teams")}
+                  className={`w-full py-4 min-h-[52px] rounded-2xl font-black text-sm sm:text-base uppercase tracking-wider transition flex items-center justify-center gap-2 shadow-xl ${selectedGameId && !roundsLoading && games.length > 0
+                      ? "bg-gradient-to-r from-amber-500 via-orange-500 to-amber-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 shadow-amber-500/20 active:scale-[0.98] cursor-pointer"
+                      : "bg-zinc-800 text-zinc-500 border border-zinc-700/50 opacity-60 cursor-not-allowed"
+                    }`}
+                >
+                  <span>Перейти до налаштування команд</span>
+                  <ArrowRight size={18} />
+                </button>
               </div>
-              <h2 className="text-xl sm:text-3xl font-black text-white uppercase tracking-tight">
-                Налаштування гри та команд
-              </h2>
-            </div>
-
-            {/* Game Selector Section */}
-            <div className="bg-zinc-900 border border-zinc-800 p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl space-y-2.5 sm:space-y-3 shadow-xl">
-              <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest block">
-                1. Оберіть гру з бази даних
-              </label>
-
-              {loading ? (
-                <div className="py-4 text-zinc-500 flex items-center justify-center gap-2">
-                  <Loader2 size={16} className="animate-spin" />
-                  <span className="text-xs">Завантаження списку ігор...</span>
-                </div>
-              ) : games.length === 0 ? (
-                <div className="p-3.5 bg-zinc-950 border border-dashed border-zinc-800 rounded-xl text-center space-y-2">
-                  <p className="text-xs text-zinc-400">Ігор ще не створено.</p>
+            ) : (
+              /* =================== КРОК 2: СКЛАД КОМАНД ТА ГРАВЦІ =================== */
+              <div className="flex flex-col gap-5 sm:gap-6 animate-fadeIn">
+                {/* Navigation Header / Back Button & Game Badge */}
+                <div className="flex items-center justify-between gap-2">
                   <button
-                    onClick={() => {
-                      if (typeof window !== "undefined") window.location.href = "/admin";
-                    }}
-                    className="px-4 py-2 min-h-[40px] bg-indigo-600 text-white rounded-xl text-xs font-bold uppercase"
+                    type="button"
+                    onClick={() => setSetupStep("select_game")}
+                    className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-300 hover:text-white text-xs font-bold transition active:scale-95 cursor-pointer min-h-[38px]"
                   >
-                    Перейти в адмінку
+                    <ArrowLeft size={14} />
+                    <span>← Змінити гру</span>
                   </button>
+
+                  <div className="text-[10px] sm:text-xs font-bold text-zinc-400 bg-zinc-900/80 border border-zinc-800 px-3 py-2 rounded-xl truncate max-w-[200px] sm:max-w-xs min-h-[38px] flex items-center">
+                    Гра: <span className="text-amber-400 font-extrabold ml-1 truncate">{selectedGame?.name || "Обрана гра"}</span>
+                  </div>
                 </div>
-              ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-2.5">
-                  {games.map((g) => (
-                    <button
-                      key={g.id}
-                      onClick={() => handleSelectGame(g)}
-                      className={`p-2.5 sm:p-3 min-h-[42px] sm:min-h-[46px] rounded-xl sm:rounded-2xl border text-left flex items-center justify-between transition cursor-pointer active:scale-95 ${selectedGameId === g.id
-                        ? "bg-indigo-950/40 border-indigo-500 text-white shadow-md shadow-indigo-950/30"
-                        : "bg-zinc-950/60 border-zinc-800 hover:border-zinc-700 text-zinc-300"
-                        }`}
-                    >
-                      <div className="truncate min-w-0 pr-2">
-                        <span className="font-extrabold text-xs sm:text-sm block truncate">{g.name}</span>
-                        {selectedGameId === g.id && (
-                          <span className="text-[9px] sm:text-[10px] text-indigo-400 font-bold block mt-0.5">
-                            Завантажено раундів: {rounds.length}
-                          </span>
+
+                {/* Title & Badge */}
+                <div className="text-center space-y-2">
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/30 text-indigo-400 text-[10px] sm:text-xs font-bold uppercase tracking-widest">
+                    <Users size={14} /> Крок 2 з 2: Склад команд
+                  </div>
+                  <h2 className="text-xl sm:text-3xl font-black text-white uppercase tracking-tight">
+                    Склад команд та учасників
+                  </h2>
+                  <p className="text-xs sm:text-sm text-zinc-400 max-w-md mx-auto">
+                    Вкажіть назви команд (по 2 гравці в кожній) та оберіть, хто робить перший хід
+                  </p>
+                </div>
+
+                {/* Step Progress Indicators */}
+                <div className="flex items-center justify-center gap-2 max-w-xs mx-auto w-full">
+                  <div className="flex-1 h-1.5 rounded-full bg-amber-500 shadow-sm shadow-amber-500/50" />
+                  <div className="flex-1 h-1.5 rounded-full bg-indigo-500 shadow-sm shadow-indigo-500/50" />
+                </div>
+
+                {/* Teams and Players Setup Card */}
+                <div className="bg-zinc-900 border border-zinc-800 p-4 sm:p-5 rounded-3xl space-y-4 shadow-xl">
+                  <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest block">
+                    Склад команд та учасників (2 гравці в кожній)
+                  </label>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 sm:gap-4">
+                    {/* Team 1 Card */}
+                    <div className="p-3.5 sm:p-4 bg-zinc-950 border border-indigo-500/30 rounded-2xl space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-black text-indigo-400 uppercase tracking-wider block">
+                          Команда 1
+                        </span>
+                        {!isTeam1Valid && (
+                          <span className="text-[9px] text-rose-400 font-bold">Заповніть поля</span>
                         )}
                       </div>
-                      {selectedGameId === g.id && <Check size={16} className="text-indigo-400 flex-shrink-0" />}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
+                      <div>
+                        <label className="text-[9px] font-bold text-zinc-500 uppercase block mb-1">Назва команди</label>
+                        <input
+                          type="text"
+                          value={gameSettings.team1.name}
+                          onChange={(e) =>
+                            setGameSettings((s) => ({ ...s, team1: { ...s.team1, name: e.target.value } }))
+                          }
+                          className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-base sm:text-xs text-white font-bold focus:outline-none focus:border-indigo-500 min-h-[44px]"
+                          placeholder="Наприклад: Знавці"
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-[9px] font-bold text-zinc-500 uppercase block">Гравці команди</label>
+                        <input
+                          type="text"
+                          placeholder="Гравець 1"
+                          value={gameSettings.team1.players[0]}
+                          onChange={(e) =>
+                            setGameSettings((s) => ({
+                              ...s,
+                              team1: { ...s.team1, players: [e.target.value, s.team1.players[1]] },
+                            }))
+                          }
+                          className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-base sm:text-xs text-zinc-200 min-h-[44px]"
+                        />
+                        <input
+                          type="text"
+                          placeholder="Гравець 2"
+                          value={gameSettings.team1.players[1]}
+                          onChange={(e) =>
+                            setGameSettings((s) => ({
+                              ...s,
+                              team1: { ...s.team1, players: [s.team1.players[0], e.target.value] },
+                            }))
+                          }
+                          className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-base sm:text-xs text-zinc-200 min-h-[44px]"
+                        />
+                      </div>
+                    </div>
 
-            {/* Teams and Players Setup Card */}
-            <div className="bg-zinc-900 border border-zinc-800 p-4 sm:p-5 rounded-3xl space-y-4 shadow-xl">
-              <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest block">
-                2. Склад команд та учасників (2 гравці в кожній)
-              </label>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 sm:gap-4">
-                {/* Team 1 Card */}
-                <div className="p-3.5 sm:p-4 bg-zinc-950 border border-indigo-500/30 rounded-2xl space-y-3">
-                  <span className="text-[10px] font-black text-indigo-400 uppercase tracking-wider block">
-                    Команда 1
-                  </span>
-                  <div>
-                    <label className="text-[9px] font-bold text-zinc-500 uppercase block mb-1">Назва команди</label>
-                    <input
-                      type="text"
-                      value={gameSettings.team1.name}
-                      onChange={(e) =>
-                        setGameSettings((s) => ({ ...s, team1: { ...s.team1, name: e.target.value } }))
-                      }
-                      className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-base sm:text-xs text-white font-bold focus:outline-none focus:border-indigo-500 min-h-[44px]"
-                    />
+                    {/* Team 2 Card */}
+                    <div className="p-3.5 sm:p-4 bg-zinc-950 border border-rose-500/30 rounded-2xl space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-black text-rose-400 uppercase tracking-wider block">
+                          Команда 2
+                        </span>
+                        {!isTeam2Valid && (
+                          <span className="text-[9px] text-rose-400 font-bold">Заповніть поля</span>
+                        )}
+                      </div>
+                      <div>
+                        <label className="text-[9px] font-bold text-zinc-500 uppercase block mb-1">Назва команди</label>
+                        <input
+                          type="text"
+                          value={gameSettings.team2.name}
+                          onChange={(e) =>
+                            setGameSettings((s) => ({ ...s, team2: { ...s.team2, name: e.target.value } }))
+                          }
+                          className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-base sm:text-xs text-white font-bold focus:outline-none focus:border-rose-500 min-h-[44px]"
+                          placeholder="Наприклад: Ерудити"
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-[9px] font-bold text-zinc-500 uppercase block">Гравці команди</label>
+                        <input
+                          type="text"
+                          placeholder="Гравець 1"
+                          value={gameSettings.team2.players[0]}
+                          onChange={(e) =>
+                            setGameSettings((s) => ({
+                              ...s,
+                              team2: { ...s.team2, players: [e.target.value, s.team2.players[1]] },
+                            }))
+                          }
+                          className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-base sm:text-xs text-zinc-200 min-h-[44px]"
+                        />
+                        <input
+                          type="text"
+                          placeholder="Гравець 2"
+                          value={gameSettings.team2.players[1]}
+                          onChange={(e) =>
+                            setGameSettings((s) => ({
+                              ...s,
+                              team2: { ...s.team2, players: [s.team2.players[0], e.target.value] },
+                            }))
+                          }
+                          className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-base sm:text-xs text-zinc-200 min-h-[44px]"
+                        />
+                      </div>
+                    </div>
                   </div>
-                  <div className="space-y-1.5">
-                    <label className="text-[9px] font-bold text-zinc-500 uppercase block">Гравці команди</label>
-                    <input
-                      type="text"
-                      placeholder="Гравець 1"
-                      value={gameSettings.team1.players[0]}
-                      onChange={(e) =>
-                        setGameSettings((s) => ({
-                          ...s,
-                          team1: { ...s.team1, players: [e.target.value, s.team1.players[1]] },
-                        }))
-                      }
-                      className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-base sm:text-xs text-zinc-200 min-h-[44px]"
-                    />
-                    <input
-                      type="text"
-                      placeholder="Гравець 2"
-                      value={gameSettings.team1.players[1]}
-                      onChange={(e) =>
-                        setGameSettings((s) => ({
-                          ...s,
-                          team1: { ...s.team1, players: [s.team1.players[0], e.target.value] },
-                        }))
-                      }
-                      className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-base sm:text-xs text-zinc-200 min-h-[44px]"
-                    />
+
+                  {/* First Turn Selector */}
+                  <div className="p-3.5 sm:p-4 bg-zinc-950 border border-zinc-800 rounded-2xl space-y-2">
+                    <span className="text-[10px] font-black text-amber-400 uppercase tracking-wider block">
+                      3. Хто починає 1-й раунд («Підстава»)?
+                    </span>
+                    <div className="grid grid-cols-1 xs:grid-cols-2 gap-2.5 sm:gap-3">
+                      <button
+                        type="button"
+                        onClick={() => setGameSettings((s) => ({ ...s, first_turn_team: 1 }))}
+                        className={`py-2.5 sm:py-3 px-3 min-h-[44px] rounded-xl border text-xs sm:text-sm font-black transition flex items-center justify-center gap-2 cursor-pointer active:scale-95 ${gameSettings.first_turn_team === 1
+                            ? "bg-indigo-600 text-white border-indigo-400 shadow-lg shadow-indigo-600/30"
+                            : "bg-zinc-900 text-zinc-400 border-zinc-800"
+                          }`}
+                      >
+                        <UserCheck size={14} />
+                        <span className="truncate">{gameSettings.team1.name || "Команда 1"}</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setGameSettings((s) => ({ ...s, first_turn_team: 2 }))}
+                        className={`py-2.5 sm:py-3 px-3 min-h-[44px] rounded-xl border text-xs sm:text-sm font-black transition flex items-center justify-center gap-2 cursor-pointer active:scale-95 ${gameSettings.first_turn_team === 2
+                            ? "bg-rose-600 text-white border-rose-400 shadow-lg shadow-rose-600/30"
+                            : "bg-zinc-900 text-zinc-400 border-zinc-800"
+                          }`}
+                      >
+                        <UserCheck size={14} />
+                        <span className="truncate">{gameSettings.team2.name || "Команда 2"}</span>
+                      </button>
+                    </div>
                   </div>
                 </div>
 
-                {/* Team 2 Card */}
-                <div className="p-3.5 sm:p-4 bg-zinc-950 border border-rose-500/30 rounded-2xl space-y-3">
-                  <span className="text-[10px] font-black text-rose-400 uppercase tracking-wider block">
-                    Команда 2
-                  </span>
-                  <div>
-                    <label className="text-[9px] font-bold text-zinc-500 uppercase block mb-1">Назва команди</label>
-                    <input
-                      type="text"
-                      value={gameSettings.team2.name}
-                      onChange={(e) =>
-                        setGameSettings((s) => ({ ...s, team2: { ...s.team2, name: e.target.value } }))
-                      }
-                      className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-base sm:text-xs text-white font-bold focus:outline-none focus:border-rose-500 min-h-[44px]"
-                    />
+                {/* Validation message banner if incomplete */}
+                {!isSetupValid && (
+                  <div className="p-3 bg-amber-500/10 border border-amber-500/30 rounded-xl text-center">
+                    <p className="text-xs text-amber-300 font-bold flex items-center justify-center gap-1.5">
+                      <AlertCircle size={14} className="text-amber-400 flex-shrink-0" />
+                      <span>Введіть назви обох команд та імена всіх 4 учасників, щоб розпочати гру</span>
+                    </p>
                   </div>
-                  <div className="space-y-1.5">
-                    <label className="text-[9px] font-bold text-zinc-500 uppercase block">Гравці команди</label>
-                    <input
-                      type="text"
-                      placeholder="Гравець 1"
-                      value={gameSettings.team2.players[0]}
-                      onChange={(e) =>
-                        setGameSettings((s) => ({
-                          ...s,
-                          team2: { ...s.team2, players: [e.target.value, s.team2.players[1]] },
-                        }))
-                      }
-                      className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-base sm:text-xs text-zinc-200 min-h-[44px]"
-                    />
-                    <input
-                      type="text"
-                      placeholder="Гравець 2"
-                      value={gameSettings.team2.players[1]}
-                      onChange={(e) =>
-                        setGameSettings((s) => ({
-                          ...s,
-                          team2: { ...s.team2, players: [s.team2.players[0], e.target.value] },
-                        }))
-                      }
-                      className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-base sm:text-xs text-zinc-200 min-h-[44px]"
-                    />
-                  </div>
-                </div>
+                )}
+
+                {/* Big Start Game Button */}
+                <button
+                  type="button"
+                  disabled={!isSetupValid || roundsLoading}
+                  onClick={startGame}
+                  className={`w-full py-4 min-h-[52px] rounded-2xl font-black text-sm sm:text-base uppercase tracking-wider transition flex items-center justify-center gap-2 shadow-xl ${isSetupValid && !roundsLoading
+                      ? "bg-gradient-to-r from-amber-500 via-orange-500 to-amber-500 hover:from-amber-400 hover:to-orange-400 active:scale-[0.98] text-slate-950 shadow-amber-500/20 cursor-pointer"
+                      : "bg-zinc-800 text-zinc-500 border border-zinc-700/50 opacity-60 cursor-not-allowed"
+                    }`}
+                >
+                  <Sparkles size={18} />
+                  <span>Розпочати гру 🚀</span>
+                </button>
               </div>
-
-              {/* First Turn Selector */}
-              <div className="p-3.5 sm:p-4 bg-zinc-950 border border-zinc-800 rounded-2xl space-y-2">
-                <span className="text-[10px] font-black text-amber-400 uppercase tracking-wider block">
-                  3. Хто починає 1-й раунд («Підстава»)?
-                </span>
-                <div className="grid grid-cols-1 xs:grid-cols-2 gap-2.5 sm:gap-3">
-                  <button
-                    type="button"
-                    onClick={() => setGameSettings((s) => ({ ...s, first_turn_team: 1 }))}
-                    className={`py-2.5 sm:py-3 px-3 min-h-[44px] rounded-xl border text-xs sm:text-sm font-black transition flex items-center justify-center gap-2 cursor-pointer active:scale-95 ${gameSettings.first_turn_team === 1
-                      ? "bg-indigo-600 text-white border-indigo-400 shadow-lg shadow-indigo-600/30"
-                      : "bg-zinc-900 text-zinc-400 border-zinc-800"
-                      }`}
-                  >
-                    <UserCheck size={14} />
-                    <span className="truncate">{gameSettings.team1.name}</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setGameSettings((s) => ({ ...s, first_turn_team: 2 }))}
-                    className={`py-2.5 sm:py-3 px-3 min-h-[44px] rounded-xl border text-xs sm:text-sm font-black transition flex items-center justify-center gap-2 cursor-pointer active:scale-95 ${gameSettings.first_turn_team === 2
-                      ? "bg-rose-600 text-white border-rose-400 shadow-lg shadow-rose-600/30"
-                      : "bg-zinc-900 text-zinc-400 border-zinc-800"
-                      }`}
-                  >
-                    <UserCheck size={14} />
-                    <span className="truncate">{gameSettings.team2.name}</span>
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* Big Start Game Button */}
-            <button
-              onClick={startGame}
-              className="w-full py-4 min-h-[52px] bg-gradient-to-r from-amber-500 via-orange-500 to-amber-500 hover:from-amber-400 hover:to-orange-400 active:scale-[0.98] text-slate-950 rounded-2xl font-black text-sm sm:text-base uppercase tracking-wider transition cursor-pointer shadow-xl shadow-amber-500/20 flex items-center justify-center gap-2"
-            >
-              <Sparkles size={18} />
-              <span>Розпочати гру!</span>
-            </button>
+            )}
           </div>
         )}
 
