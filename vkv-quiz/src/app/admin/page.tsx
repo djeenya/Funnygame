@@ -657,69 +657,92 @@ export default function AdminPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-zinc-50 flex flex-col font-sans select-none pb-20">
+    <div className="min-h-screen bg-slate-950 text-zinc-50 flex flex-col font-sans select-none pb-20 touch-manipulation overflow-x-hidden">
       {/* Header */}
-      <header className="border-b border-zinc-900 bg-zinc-950/80 backdrop-blur-md px-6 py-4 sticky top-0 z-40">
-        <div className="max-w-6xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => {
-                if (typeof window !== "undefined") window.location.href = "/";
-              }}
-              className="p-2 bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-white rounded-xl border border-zinc-800 transition cursor-pointer"
-              title="На головну гру"
-            >
-              <ArrowLeft size={16} />
-            </button>
-            <div>
-              <h1 className="text-sm font-black text-white uppercase tracking-wider">Адмінка ВКВ 2026</h1>
-              <span className="text-[10px] text-zinc-500 font-bold">Конструктор ігор та 4 раундів</span>
+      <header className="border-b border-zinc-900 bg-zinc-950/90 backdrop-blur-md px-3 sm:px-6 py-3 sm:py-4 sticky top-0 z-40">
+        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-4">
+          {/* Top Row on Mobile: Left (Back + Title) & Right (Game Link + Logout) */}
+          <div className="flex items-center justify-between w-full sm:w-auto gap-2">
+            <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+              <button
+                onClick={() => {
+                  if (typeof window !== "undefined") window.location.href = "/";
+                }}
+                className="p-2 min-h-[38px] min-w-[38px] bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-white rounded-xl border border-zinc-800 transition cursor-pointer flex items-center justify-center active:scale-95 touch-manipulation"
+                title="На головну гру"
+              >
+                <ArrowLeft size={16} />
+              </button>
+              <div className="min-w-0">
+                <h1 className="text-xs sm:text-sm font-black text-white uppercase tracking-wider truncate">Адмінка ВКВ 2026</h1>
+                <span className="text-[9px] sm:text-[10px] text-zinc-500 font-bold block truncate">Конструктор ігор та 4 раундів</span>
+              </div>
+            </div>
+
+            <div className="flex sm:hidden items-center gap-2">
+              <button
+                onClick={() => {
+                  if (typeof window !== "undefined") window.location.href = "/";
+                }}
+                className="px-2.5 py-1.5 min-h-[36px] bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 border border-indigo-500/30 rounded-xl text-xs font-bold transition cursor-pointer flex items-center justify-center active:scale-95 touch-manipulation"
+              >
+                Ігровий екран
+              </button>
+              <button
+                onClick={handleLogout}
+                className="p-2 min-h-[36px] min-w-[36px] text-zinc-500 hover:text-zinc-300 rounded-xl hover:bg-zinc-900 transition cursor-pointer flex items-center justify-center touch-manipulation"
+                title="Вийти"
+              >
+                <LogOut size={16} />
+              </button>
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
-            {/* Quick Demo Game Creation Button */}
+          {/* Action Row / Desktop Right Controls */}
+          <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
             <button
               type="button"
               disabled={creatingDemoGame}
               onClick={handleCreateDemoGame}
-              className="px-3.5 py-2 bg-gradient-to-r from-amber-500 via-orange-500 to-amber-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-black rounded-xl text-xs uppercase tracking-wider transition cursor-pointer shadow-lg shadow-amber-500/20 flex items-center gap-1.5"
+              className="w-full sm:w-auto px-4 py-2.5 min-h-[42px] bg-gradient-to-r from-amber-500 via-orange-500 to-amber-500 hover:from-amber-400 hover:to-orange-400 active:scale-95 text-slate-950 font-black rounded-xl text-xs sm:text-sm uppercase tracking-wider transition cursor-pointer shadow-lg shadow-amber-500/20 flex items-center justify-center gap-1.5 touch-manipulation"
             >
               {creatingDemoGame ? (
                 <>
-                  <Loader2 size={14} className="animate-spin" />
+                  <Loader2 size={15} className="animate-spin" />
                   <span>Створення...</span>
                 </>
               ) : (
                 <>
-                  <Sparkles size={14} />
+                  <Sparkles size={15} />
                   <span>⚡ Створити готову демо-гру (4 раунди)</span>
                 </>
               )}
             </button>
 
-            <button
-              onClick={() => {
-                if (typeof window !== "undefined") window.location.href = "/";
-              }}
-              className="px-3 py-2 bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 border border-indigo-500/30 rounded-xl text-xs font-bold transition cursor-pointer"
-            >
-              Ігровий екран
-            </button>
-            <button
-              onClick={handleLogout}
-              className="p-2 text-zinc-500 hover:text-zinc-300 transition cursor-pointer"
-              title="Вийти"
-            >
-              <LogOut size={16} />
-            </button>
+            <div className="hidden sm:flex items-center gap-2">
+              <button
+                onClick={() => {
+                  if (typeof window !== "undefined") window.location.href = "/";
+                }}
+                className="px-3 py-2 min-h-[38px] bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 border border-indigo-500/30 rounded-xl text-xs font-bold transition cursor-pointer flex items-center justify-center active:scale-95"
+              >
+                Ігровий екран
+              </button>
+              <button
+                onClick={handleLogout}
+                className="p-2 min-h-[38px] min-w-[38px] text-zinc-500 hover:text-zinc-300 rounded-xl hover:bg-zinc-900 transition cursor-pointer flex items-center justify-center"
+                title="Вийти"
+              >
+                <LogOut size={16} />
+              </button>
+            </div>
           </div>
         </div>
       </header>
 
       {/* Notifications */}
       {errorMessage && (
-        <div className="max-w-6xl mx-auto w-full px-6 mt-4">
+        <div className="max-w-6xl mx-auto w-full px-3 sm:px-6 mt-4">
           <div className="p-3.5 bg-rose-950/50 border border-rose-500/40 text-rose-300 text-xs rounded-xl flex items-center justify-between">
             <div className="flex items-center gap-2">
               <AlertCircle size={15} />
@@ -731,7 +754,7 @@ export default function AdminPage() {
       )}
 
       {successMessage && (
-        <div className="max-w-6xl mx-auto w-full px-6 mt-4">
+        <div className="max-w-6xl mx-auto w-full px-3 sm:px-6 mt-4">
           <div className="p-3.5 bg-emerald-950/50 border border-emerald-500/40 text-emerald-300 text-xs rounded-xl flex items-center justify-between">
             <div className="flex items-center gap-2">
               <CheckCircle2 size={15} />
@@ -743,9 +766,9 @@ export default function AdminPage() {
       )}
 
       {/* Main Grid */}
-      <main className="max-w-6xl w-full mx-auto px-6 py-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+      <main className="max-w-6xl w-full mx-auto px-3 sm:px-6 py-4 sm:py-6 grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
         {/* Column 1: Games List & Create Game */}
-        <section className="bg-zinc-900 border border-zinc-800/80 rounded-2xl p-5 flex flex-col gap-4 shadow-lg">
+        <section className="bg-zinc-900 border border-zinc-800/80 rounded-2xl p-4 sm:p-5 flex flex-col gap-4 shadow-lg">
           <div className="flex items-center justify-between">
             <h2 className="text-xs font-bold text-zinc-400 uppercase tracking-widest flex items-center gap-1.5">
               <ListOrdered size={14} /> Список Ігор
@@ -758,7 +781,7 @@ export default function AdminPage() {
               placeholder="Назва нової гри..."
               value={newGameName}
               onChange={(e) => setNewGameName(e.target.value)}
-              className="flex-grow bg-zinc-950 border border-zinc-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500"
+              className="flex-grow bg-zinc-950 border border-zinc-800 rounded-xl px-3 py-2 text-xs sm:text-sm text-white focus:outline-none focus:border-indigo-500"
             />
             <button
               type="submit"
@@ -803,7 +826,7 @@ export default function AdminPage() {
         {/* Column 2 & 3: Selected Game Rounds & Builder */}
         <section className="md:col-span-2 flex flex-col gap-6">
           {!selectedGame ? (
-            <div className="flex-grow bg-zinc-900/40 border border-zinc-800 border-dashed rounded-3xl p-10 flex flex-col items-center justify-center text-center text-zinc-500 min-h-[400px]">
+            <div className="flex-grow bg-zinc-900/40 border border-zinc-800 border-dashed rounded-3xl p-6 sm:p-10 flex flex-col items-center justify-center text-center text-zinc-500 min-h-[400px]">
               <HelpCircle size={48} className="text-zinc-700 mb-3" />
               <h3 className="text-base font-bold text-zinc-400">Гра не обрана</h3>
               <p className="text-xs text-zinc-500 mt-1 mb-4">Оберіть або створіть гру зліва, або запустіть повний демо-пак.</p>
@@ -820,11 +843,11 @@ export default function AdminPage() {
           ) : (
             <div className="flex flex-col gap-6 animate-fadeIn">
               {/* Existing Rounds in Selected Game */}
-              <div className="bg-zinc-900 border border-zinc-800/80 rounded-2xl p-5 shadow-lg">
+              <div className="bg-zinc-900 border border-zinc-800/80 rounded-2xl p-4 sm:p-5 shadow-lg">
                 <div className="flex items-center justify-between mb-4 pb-2 border-b border-zinc-800/60">
                   <div>
                     <span className="text-[10px] text-indigo-400 font-bold uppercase tracking-widest block">Поточна гра</span>
-                    <h3 className="text-base font-black text-white uppercase">{selectedGame.name}</h3>
+                    <h3 className="text-sm sm:text-base font-black text-white uppercase">{selectedGame.name}</h3>
                   </div>
                   <div className="flex items-center gap-2">
                     {rounds.length === 0 && (
@@ -873,13 +896,13 @@ export default function AdminPage() {
                     </div>
                   ) : (
                     rounds.map((round, idx) => (
-                      <div key={round.id} className="flex items-center justify-between p-3 bg-zinc-950 border border-zinc-800/80 rounded-xl">
-                        <div className="flex items-center gap-3">
-                          <div className="w-7 h-7 rounded-lg bg-zinc-900 flex items-center justify-center text-xs font-extrabold text-zinc-400 border border-zinc-800 font-mono">
+                      <div key={round.id} className="flex items-center justify-between p-3 bg-zinc-950 border border-zinc-800/80 rounded-xl gap-2">
+                        <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1">
+                          <div className="w-7 h-7 rounded-lg bg-zinc-900 flex items-center justify-center text-xs font-extrabold text-zinc-400 border border-zinc-800 font-mono flex-shrink-0">
                             {idx + 1}
                           </div>
-                          <div>
-                            <span className="text-xs font-black text-white block">
+                          <div className="min-w-0 flex-1">
+                            <span className="text-xs sm:text-sm font-black text-white block truncate">
                               {round.type === "easy_hard" || round.type === "pidstava"
                                 ? `Підстава (${(round.cards || round.data?.cards || []).length} тем)`
                                 : round.type === "youtube_comments" || round.type === "comments"
@@ -890,34 +913,34 @@ export default function AdminPage() {
                             </span>
                           </div>
                         </div>
-                        <div className="flex items-center gap-1">
+                        <div className="flex items-center gap-1.5 shrink-0 ml-2">
                           <button
                             type="button"
                             disabled={idx === 0 || reorderingRounds}
                             onClick={() => handleMoveRound(idx, "up")}
-                            className="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800/80 disabled:opacity-20 disabled:hover:bg-transparent disabled:hover:text-zinc-400 disabled:cursor-not-allowed transition cursor-pointer"
+                            className="w-9 h-9 p-2 rounded-lg bg-zinc-800 border border-zinc-700 text-zinc-200 active:bg-zinc-700 hover:text-white hover:border-zinc-600 disabled:opacity-20 disabled:hover:bg-zinc-800 disabled:hover:text-zinc-200 disabled:cursor-not-allowed transition cursor-pointer flex items-center justify-center touch-manipulation"
                             title="Перемістити раунд вгору"
                           >
-                            <ChevronUp size={14} />
+                            <ChevronUp size={16} />
                           </button>
 
                           <button
                             type="button"
                             disabled={idx === rounds.length - 1 || reorderingRounds}
                             onClick={() => handleMoveRound(idx, "down")}
-                            className="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800/80 disabled:opacity-20 disabled:hover:bg-transparent disabled:hover:text-zinc-400 disabled:cursor-not-allowed transition cursor-pointer"
+                            className="w-9 h-9 p-2 rounded-lg bg-zinc-800 border border-zinc-700 text-zinc-200 active:bg-zinc-700 hover:text-white hover:border-zinc-600 disabled:opacity-20 disabled:hover:bg-zinc-800 disabled:hover:text-zinc-200 disabled:cursor-not-allowed transition cursor-pointer flex items-center justify-center touch-manipulation"
                             title="Перемістити раунд вниз"
                           >
-                            <ChevronDown size={14} />
+                            <ChevronDown size={16} />
                           </button>
 
                           <button
                             type="button"
                             onClick={() => handleDeleteRound(round.id, idx)}
-                            className="p-1.5 rounded-lg text-zinc-500 hover:text-rose-400 hover:bg-rose-950/30 transition cursor-pointer ml-1"
+                            className="w-9 h-9 p-2 rounded-lg bg-rose-950/20 border border-rose-500/30 text-rose-400 hover:bg-rose-950/40 hover:text-rose-300 active:scale-95 transition cursor-pointer flex items-center justify-center touch-manipulation ml-0.5"
                             title="Видалити раунд"
                           >
-                            <Trash2 size={13} />
+                            <Trash2 size={15} />
                           </button>
                         </div>
                       </div>
@@ -927,7 +950,7 @@ export default function AdminPage() {
               </div>
 
               {/* Add Round Constructor */}
-              <div className="bg-zinc-900 border border-zinc-800/80 rounded-2xl p-5 shadow-lg">
+              <div className="bg-zinc-900 border border-zinc-800/80 rounded-2xl p-4 sm:p-5 shadow-lg">
                 <h3 className="text-sm font-black text-white uppercase tracking-wider mb-4 flex items-center gap-1.5">
                   <PlusCircle size={16} className="text-indigo-400" />
                   <span>Додати Новий Раунд</span>
