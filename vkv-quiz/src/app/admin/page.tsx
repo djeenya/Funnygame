@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { supabase } from "@/lib/supabase";
 import { Game, Round, RoundType, PidstavaCard, CommentGame, BlitzQuestion } from "@/types/quiz";
 import {
@@ -25,6 +25,8 @@ import {
   ArrowLeft,
   LogOut,
   CheckCircle2,
+  Edit3,
+  X,
 } from "lucide-react";
 
 // Демо-пак 1: «Підстава» (8 карток / тем з окремими фактами для легкого та складного)
@@ -227,6 +229,11 @@ export default function AdminPage() {
   const [aliasForm, setAliasForm] = useState(getDefaultAliasForm());
   const [draftRestored, setDraftRestored] = useState<boolean>(false);
 
+  // Round Edit Mode States
+  const [editingRoundId, setEditingRoundId] = useState<string | null>(null);
+  const [editingRoundName, setEditingRoundName] = useState<string>("");
+  const formRef = useRef<HTMLDivElement | null>(null);
+
   // Restore draft from localStorage on initial mount
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -294,6 +301,8 @@ export default function AdminPage() {
       const confirmed = window.confirm("Очистити всю введену інформацію у формі та скинути чернетку?");
       if (!confirmed) return;
     }
+    setEditingRoundId(null);
+    setEditingRoundName("");
     setEasyHardCards(getDefaultEasyHardCards());
     setActiveCardTab(0);
     setCommentGames(getDefaultCommentGames());
@@ -320,8 +329,13 @@ export default function AdminPage() {
   }, [isAuthenticated]);
 
   useEffect(() => {
-    if (selectedGame) fetchRounds(selectedGame.id);
-    else setRounds([]);
+    if (selectedGame) {
+      fetchRounds(selectedGame.id);
+      setEditingRoundId(null);
+      setEditingRoundName("");
+    } else {
+      setRounds([]);
+    }
   }, [selectedGame]);
 
   const handleLogin = (e: React.FormEvent) => {
@@ -567,6 +581,11 @@ export default function AdminPage() {
       const { error } = await supabase.from("rounds").delete().eq("id", roundId);
       if (error) throw error;
       setSuccessMessage("Раунд видалено.");
+      if (editingRoundId === roundId) {
+        setEditingRoundId(null);
+        setEditingRoundName("");
+        handleResetRoundForm(false);
+      }
       if (selectedGame) {
         // Fetch and re-index remaining rounds sequentially
         const { data } = await supabase
@@ -624,56 +643,222 @@ export default function AdminPage() {
     }
   };
 
-  const handleAddRound = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const prepareRoundData = () => {
+    let roundData: any = {};
+
+    if (roundType === "easy_hard" || roundType === "pidstava") {
+      for (let i = 0; i < 8; i++) {
+        const card = easyHardCards[i];
+        const easyQ = card?.easy_question || card?.question_easy || "";
+        const hardQ = card?.hard_question || card?.question_hard || "";
+        if (!card?.topic?.trim() || !easyQ.trim() || !hardQ.trim()) {
+          throw new Error(`Заповніть тему та запитання для картки ${i + 1}`);
+        }
+      }
+      const normalizedCards = easyHardCards.map((c) => ({
+        topic: (c.topic || "").trim(),
+        easy_question: (c.easy_question || c.question_easy || "").trim(),
+        easy_answer: (c.easy_answer || c.correct_answer_easy || "").trim(),
+        easy_fact: (c.easy_fact || c.fact || "").trim(),
+        hard_question: (c.hard_question || c.question_hard || "").trim(),
+        hard_answer: (c.hard_answer || c.correct_answer_hard || "").trim(),
+        hard_fact: (c.hard_fact || "").trim(),
+      }));
+      roundData = { cards: normalizedCards, question: "Підстава (8 тем)" };
+    } else if (roundType === "youtube_comments" || roundType === "comments") {
+      for (let i = 0; i < 4; i++) {
+        const g = commentGames[i];
+        if (!g?.correct_video?.trim() || g.fake_videos.some((v) => !v.trim()) || g.comments.some((c) => !c.trim())) {
+          throw new Error(`Заповніть правильну назву, 3 фейки та 4 коментарі для гри ${i + 1}`);
+        }
+      }
+      const normalizedComments = commentGames.map((g) => ({
+        correct_video: (g.correct_video || "").trim(),
+        fake_videos: (g.fake_videos || []).map((f) => f.trim()),
+        comments: (g.comments || []).map((c) => c.trim()),
+        options: [(g.correct_video || "").trim(), ...(g.fake_videos || []).map((f) => f.trim())],
+        video_url: (g.video_url || "").trim(),
+      }));
+      roundData = { games: normalizedComments, comment_games: normalizedComments, question: "Коментарі (4 гри)" };
+    } else if (roundType === "blitz_5sec" || roundType === "blitz_5_10") {
+      if (blitzQuestions.some((q) => !q?.question?.trim())) {
+        throw new Error("Заповніть усі 8 бліц-питань для раунду 5/10");
+      }
+      const normalizedBlitz = blitzQuestions.map((q) => ({ question: (q.question || "").trim() }));
+      roundData = { questions: normalizedBlitz, blitz_questions: normalizedBlitz, question: "5/10 (8 питань)" };
+    } else if (roundType === "alias") {
+      roundData = { config: { timer_seconds: 71 }, timer_seconds: 71, question: aliasForm.question.trim() || "Еліас (71с / 01:11)" };
+    }
+
+    return roundData;
+  };
+
+  const handleEditRound = (round: Round, idx: number) => {
+    setEditingRoundId(round.id);
+    let label = `Раунд ${idx + 1}`;
+
+    if (round.type === "easy_hard" || round.type === "pidstava") {
+      setRoundType("easy_hard");
+      label = `Підстава (Раунд ${idx + 1})`;
+      const rawCards = round.cards || round.data?.cards || [];
+      if (rawCards.length > 0) {
+        const fullCards: PidstavaCard[] = Array.from({ length: 8 }).map((_, i) => {
+          const c = rawCards[i];
+          if (!c) {
+            return {
+              topic: `Тема ${i + 1}`,
+              easy_question: "",
+              easy_answer: "",
+              easy_fact: "",
+              hard_question: "",
+              hard_answer: "",
+              hard_fact: "",
+            };
+          }
+          return {
+            topic: c.topic || "",
+            easy_question: c.easy_question || c.question_easy || "",
+            easy_answer: c.easy_answer || c.correct_answer_easy || "",
+            easy_fact: c.easy_fact || c.fact || "",
+            hard_question: c.hard_question || c.question_hard || "",
+            hard_answer: c.hard_answer || c.correct_answer_hard || "",
+            hard_fact: c.hard_fact || "",
+          };
+        });
+        setEasyHardCards(fullCards);
+      }
+      setActiveCardTab(0);
+    } else if (round.type === "youtube_comments" || round.type === "comments") {
+      setRoundType("youtube_comments");
+      label = `Коментарі (Раунд ${idx + 1})`;
+      const rawGames = round.comment_games || round.data?.comment_games || round.data?.games || round.games || [];
+      if (rawGames.length > 0) {
+        const fullGames: CommentGame[] = Array.from({ length: 4 }).map((_, i) => {
+          const g = rawGames[i];
+          if (!g) {
+            return {
+              correct_video: "",
+              fake_videos: ["", "", ""],
+              comments: ["", "", "", ""],
+              video_url: "",
+            };
+          }
+          return {
+            correct_video: g.correct_video || "",
+            fake_videos: Array.isArray(g.fake_videos) && g.fake_videos.length === 3 ? g.fake_videos : ["", "", ""],
+            comments: Array.isArray(g.comments) && g.comments.length === 4 ? g.comments : ["", "", "", ""],
+            video_url: g.video_url || "",
+          };
+        });
+        setCommentGames(fullGames);
+      }
+      setActiveCommentTab(0);
+    } else if (round.type === "blitz_5sec" || round.type === "blitz_5_10") {
+      setRoundType("blitz_5sec");
+      label = `5/10 (Раунд ${idx + 1})`;
+      const rawQuestions = round.blitz_questions || round.data?.blitz_questions || round.data?.questions || round.questions || [];
+      if (rawQuestions.length > 0) {
+        const fullBlitz: BlitzQuestion[] = Array.from({ length: 8 }).map((_, i) => {
+          const q = rawQuestions[i];
+          return {
+            question: q?.question || "",
+          };
+        });
+        setBlitzQuestions(fullBlitz);
+      }
+    } else if (round.type === "alias") {
+      setRoundType("alias");
+      label = `Еліас (Раунд ${idx + 1})`;
+      setAliasForm({
+        question: round.question || round.data?.question || "Еліас: 71 секунда (01:11, паперові картки)",
+      });
+    }
+
+    setEditingRoundName(label);
+    setSuccessMessage(`Дані раунду #${idx + 1} завантажено у форму для редагування / копіювання`);
+
+    // Smooth scroll to builder form
+    setTimeout(() => {
+      if (formRef.current) {
+        formRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    }, 50);
+  };
+
+  const handleUpdateRound = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!selectedGame || !editingRoundId) return;
+    try {
+      setSubmittingRound(true);
+      const roundData = prepareRoundData();
+
+      const { error } = await supabase
+        .from("rounds")
+        .update({
+          type: roundType,
+          data: roundData,
+        })
+        .eq("id", editingRoundId);
+
+      if (error) throw error;
+
+      setSuccessMessage("Зміни у раунді успішно збережено!");
+      await fetchRounds(selectedGame.id);
+    } catch (err: any) {
+      console.error("handleUpdateRound error:", err);
+      setErrorMessage(err.message || "Помилка збереження змін раунду");
+    } finally {
+      setSubmittingRound(false);
+    }
+  };
+
+  const handleSaveAsNewRound = async () => {
     if (!selectedGame) return;
     try {
       setSubmittingRound(true);
-      let roundData: any = {};
+      const roundData = prepareRoundData();
+      const nextOrder = rounds.length;
 
-      if (roundType === "easy_hard" || roundType === "pidstava") {
-        for (let i = 0; i < 8; i++) {
-          const card = easyHardCards[i];
-          const easyQ = card.easy_question || card.question_easy || "";
-          const hardQ = card.hard_question || card.question_hard || "";
-          if (!card.topic.trim() || !easyQ.trim() || !hardQ.trim()) {
-            throw new Error(`Заповніть тему та запитання для картки ${i + 1}`);
-          }
-        }
-        const normalizedCards = easyHardCards.map((c) => ({
-          topic: c.topic.trim(),
-          easy_question: (c.easy_question || c.question_easy || "").trim(),
-          easy_answer: (c.easy_answer || c.correct_answer_easy || "").trim(),
-          easy_fact: (c.easy_fact || c.fact || "").trim(),
-          hard_question: (c.hard_question || c.question_hard || "").trim(),
-          hard_answer: (c.hard_answer || c.correct_answer_hard || "").trim(),
-          hard_fact: (c.hard_fact || "").trim(),
-        }));
-        roundData = { cards: normalizedCards, question: "Підстава (8 тем)" };
-      } else if (roundType === "youtube_comments" || roundType === "comments") {
-        for (let i = 0; i < 4; i++) {
-          const g = commentGames[i];
-          if (!g.correct_video.trim() || g.fake_videos.some((v) => !v.trim()) || g.comments.some((c) => !c.trim())) {
-            throw new Error(`Заповніть правильну назву, 3 фейки та 4 коментарі для гри ${i + 1}`);
-          }
-        }
-        const normalizedComments = commentGames.map((g) => ({
-          correct_video: g.correct_video.trim(),
-          fake_videos: g.fake_videos.map((f) => f.trim()),
-          comments: g.comments.map((c) => c.trim()),
-          options: [g.correct_video.trim(), ...g.fake_videos.map((f) => f.trim())],
-          video_url: g.video_url || "",
-        }));
-        roundData = { games: normalizedComments, comment_games: normalizedComments, question: "Коментарі (4 гри)" };
-      } else if (roundType === "blitz_5sec" || roundType === "blitz_5_10") {
-        if (blitzQuestions.some((q) => !q.question.trim())) {
-          throw new Error("Заповніть усі 8 бліц-питань для раунду 5/10");
-        }
-        const normalizedBlitz = blitzQuestions.map((q) => ({ question: q.question.trim() }));
-        roundData = { questions: normalizedBlitz, blitz_questions: normalizedBlitz, question: "5/10 (8 питань)" };
-      } else if (roundType === "alias") {
-        roundData = { config: { timer_seconds: 71 }, timer_seconds: 71, question: aliasForm.question.trim() || "Еліас (71с / 01:11)" };
-      }
+      const insertPayload: any = {
+        game_id: selectedGame.id,
+        type: roundType,
+        order_index: nextOrder,
+        data: roundData,
+      };
+
+      const { error } = await supabase.from("rounds").insert([insertPayload]);
+      if (error) throw error;
+
+      setSuccessMessage(`Раунд успішно збережено як новий окремий раунд #${nextOrder + 1}!`);
+      setEditingRoundId(null);
+      setEditingRoundName("");
+      handleResetRoundForm(false);
+      await fetchRounds(selectedGame.id);
+    } catch (err: any) {
+      console.error("handleSaveAsNewRound error:", err);
+      setErrorMessage(err.message || "Помилка збереження нового раунду");
+    } finally {
+      setSubmittingRound(false);
+    }
+  };
+
+  const handleCancelEditing = () => {
+    setEditingRoundId(null);
+    setEditingRoundName("");
+    handleResetRoundForm(false);
+    setSuccessMessage("Редагування скасовано. Форму повернуто у стандартний режим.");
+  };
+
+  const handleAddRound = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (editingRoundId) {
+      await handleUpdateRound();
+      return;
+    }
+    if (!selectedGame) return;
+    try {
+      setSubmittingRound(true);
+      const roundData = prepareRoundData();
 
       const nextOrder = rounds.length;
       const insertPayload: any = {
@@ -1026,6 +1211,18 @@ export default function AdminPage() {
 
                           <button
                             type="button"
+                            onClick={() => handleEditRound(round, idx)}
+                            className={`w-9 h-9 p-2 rounded-lg border transition cursor-pointer flex items-center justify-center touch-manipulation active:scale-95 ${editingRoundId === round.id
+                                ? "bg-amber-500/20 border-amber-500 text-amber-400 ring-1 ring-amber-500/50"
+                                : "bg-zinc-800 border-zinc-700 text-zinc-200 hover:text-amber-400 hover:border-amber-500/40 active:bg-zinc-700"
+                              }`}
+                            title="Редагувати / Переглянути раунд"
+                          >
+                            <Edit3 size={15} />
+                          </button>
+
+                          <button
+                            type="button"
                             onClick={() => handleDeleteRound(round.id, idx)}
                             className="w-9 h-9 p-2 rounded-lg bg-rose-950/20 border border-rose-500/30 text-rose-400 hover:bg-rose-950/40 hover:text-rose-300 active:scale-95 transition cursor-pointer flex items-center justify-center touch-manipulation ml-0.5"
                             title="Видалити раунд"
@@ -1039,29 +1236,57 @@ export default function AdminPage() {
                 </div>
               </div>
 
-              {/* Add Round Constructor */}
-              <div className="bg-zinc-900 border border-zinc-800/80 rounded-2xl p-4 sm:p-5 shadow-lg">
+              {/* Add / Edit Round Constructor */}
+              <div ref={formRef} className="bg-zinc-900 border border-zinc-800/80 rounded-2xl p-4 sm:p-5 shadow-lg scroll-mt-6">
                 <div className="flex items-center justify-between mb-4 pb-2 border-b border-zinc-800/60 flex-wrap gap-2">
-                  <div className="flex items-center gap-2">
-                    <h3 className="text-sm font-black text-white uppercase tracking-wider flex items-center gap-1.5">
-                      <PlusCircle size={16} className="text-indigo-400" />
-                      <span>Додати Новий Раунд</span>
-                    </h3>
-                    <span className="text-[10px] text-zinc-500 font-bold hidden sm:inline-flex items-center gap-1 bg-zinc-950 px-2 py-0.5 rounded-md border border-zinc-800">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                      Автозбереження чернетки
-                    </span>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    {editingRoundId ? (
+                      <>
+                        <h3 className="text-sm font-black text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
+                          <Edit3 size={16} className="text-amber-400" />
+                          <span>РЕДАГУВАННЯ РАУНДУ [{editingRoundName || "Раунд"}]</span>
+                        </h3>
+                        <span className="text-[10px] text-amber-400 font-bold bg-amber-500/10 border border-amber-500/30 px-2 py-0.5 rounded-md">
+                          Режим редагування
+                        </span>
+                      </>
+                    ) : (
+                      <>
+                        <h3 className="text-sm font-black text-white uppercase tracking-wider flex items-center gap-1.5">
+                          <PlusCircle size={16} className="text-indigo-400" />
+                          <span>Додати Новий Раунд</span>
+                        </h3>
+                        <span className="text-[10px] text-zinc-500 font-bold hidden sm:inline-flex items-center gap-1 bg-zinc-950 px-2 py-0.5 rounded-md border border-zinc-800">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                          Автозбереження чернетки
+                        </span>
+                      </>
+                    )}
                   </div>
 
-                  <button
-                    type="button"
-                    onClick={() => handleResetRoundForm(true)}
-                    className="px-2.5 py-1 text-zinc-400 hover:text-rose-400 hover:bg-rose-950/20 border border-zinc-800 hover:border-rose-500/30 rounded-lg text-xs font-bold transition cursor-pointer flex items-center gap-1.5 touch-manipulation active:scale-95"
-                    title="Скинути чернетку та очистити всі поля"
-                  >
-                    <Trash2 size={13} />
-                    <span>Очистити форму</span>
-                  </button>
+                  <div className="flex items-center gap-2">
+                    {editingRoundId ? (
+                      <button
+                        type="button"
+                        onClick={handleCancelEditing}
+                        className="px-2.5 py-1 text-zinc-400 hover:text-white bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-lg text-xs font-bold transition cursor-pointer flex items-center gap-1.5 touch-manipulation active:scale-95"
+                        title="Скасувати режим редагування"
+                      >
+                        <X size={13} />
+                        <span>Скасувати</span>
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => handleResetRoundForm(true)}
+                        className="px-2.5 py-1 text-zinc-400 hover:text-rose-400 hover:bg-rose-950/20 border border-zinc-800 hover:border-rose-500/30 rounded-lg text-xs font-bold transition cursor-pointer flex items-center gap-1.5 touch-manipulation active:scale-95"
+                        title="Скинути чернетку та очистити всі поля"
+                      >
+                        <Trash2 size={13} />
+                        <span>Очистити форму</span>
+                      </button>
+                    )}
+                  </div>
                 </div>
 
                 <form onSubmit={handleAddRound} className="flex flex-col gap-5">
@@ -1445,24 +1670,66 @@ export default function AdminPage() {
                     )}
                   </div>
 
-                  {/* Submit Round Button */}
-                  <button
-                    type="submit"
-                    disabled={submittingRound}
-                    className="w-full py-3.5 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white rounded-xl font-black text-xs uppercase tracking-wider transition cursor-pointer shadow-lg shadow-indigo-600/30 flex items-center justify-center gap-2"
-                  >
-                    {submittingRound ? (
-                      <>
-                        <Loader2 size={16} className="animate-spin" />
-                        <span>Збереження...</span>
-                      </>
-                    ) : (
-                      <>
-                        <Check size={16} />
-                        <span>Додати раунд до гри</span>
-                      </>
-                    )}
-                  </button>
+                  {/* Submit / Edit Round Buttons */}
+                  {editingRoundId ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                      <button
+                        type="button"
+                        disabled={submittingRound}
+                        onClick={handleUpdateRound}
+                        className="w-full py-3.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 disabled:opacity-50 text-slate-950 rounded-xl font-black text-xs uppercase tracking-wider transition cursor-pointer shadow-lg shadow-amber-500/20 flex items-center justify-center gap-2 active:scale-[0.98]"
+                      >
+                        {submittingRound ? (
+                          <>
+                            <Loader2 size={16} className="animate-spin" />
+                            <span>Збереження...</span>
+                          </>
+                        ) : (
+                          <>
+                            <Check size={16} />
+                            <span>Зберегти зміни</span>
+                          </>
+                        )}
+                      </button>
+
+                      <button
+                        type="button"
+                        disabled={submittingRound}
+                        onClick={handleSaveAsNewRound}
+                        className="w-full py-3.5 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white rounded-xl font-black text-xs uppercase tracking-wider transition cursor-pointer shadow-lg shadow-indigo-600/30 flex items-center justify-center gap-2 active:scale-[0.98]"
+                      >
+                        {submittingRound ? (
+                          <>
+                            <Loader2 size={16} className="animate-spin" />
+                            <span>Додавання...</span>
+                          </>
+                        ) : (
+                          <>
+                            <PlusCircle size={16} />
+                            <span>Зберегти як новий раунд</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      type="submit"
+                      disabled={submittingRound}
+                      className="w-full py-3.5 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white rounded-xl font-black text-xs uppercase tracking-wider transition cursor-pointer shadow-lg shadow-indigo-600/30 flex items-center justify-center gap-2 active:scale-[0.98]"
+                    >
+                      {submittingRound ? (
+                        <>
+                          <Loader2 size={16} className="animate-spin" />
+                          <span>Збереження...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Check size={16} />
+                          <span>Додати раунд до гри</span>
+                        </>
+                      )}
+                    </button>
+                  )}
                 </form>
               </div>
             </div>
