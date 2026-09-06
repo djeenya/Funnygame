@@ -2607,21 +2607,21 @@ export default function GamePage() {
             </div>
 
             {/* Action Buttons */}
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 w-full max-w-lg">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 w-full max-w-md mx-auto px-4 mt-6">
               <button
                 onClick={handleRematch}
-                className="w-full sm:w-1/2 py-3.5 sm:py-4 min-h-[50px] bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 active:scale-95 text-slate-950 rounded-2xl font-black text-xs sm:text-sm uppercase tracking-wider transition cursor-pointer shadow-lg shadow-amber-500/20 flex items-center justify-center gap-2 touch-manipulation"
+                className="w-full sm:w-auto min-h-[48px] px-6 py-3 rounded-xl font-bold flex items-center justify-center gap-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-black shadow-lg shadow-orange-500/20 active:scale-95 transition-all text-sm sm:text-base whitespace-nowrap"
               >
-                <Zap size={16} />
-                <span>⚡ Реванш (тими ж складами)</span>
+                <Zap size={16} className="fill-current" />
+                <span>РЕВАНШ (ТИМИ Ж СКЛАДАМИ)</span>
               </button>
 
               <button
                 onClick={handleStartNewGame}
-                className="w-full sm:w-1/2 py-3.5 sm:py-4 min-h-[50px] bg-zinc-900 hover:bg-zinc-800 active:scale-95 text-white border border-zinc-800 rounded-2xl font-bold text-xs sm:text-sm uppercase tracking-wider transition cursor-pointer flex items-center justify-center gap-2 touch-manipulation"
+                className="w-full sm:w-auto min-h-[48px] px-6 py-3 rounded-xl font-bold flex items-center justify-center gap-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700 active:scale-95 transition-all text-sm sm:text-base whitespace-nowrap"
               >
-                <RotateCcw size={15} />
-                <span>🔄 Почати нову гру</span>
+                <RotateCcw size={16} />
+                <span>ПОЧАТИ НОВУ ГРУ</span>
               </button>
             </div>
           </div>
