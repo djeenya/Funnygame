@@ -182,6 +182,82 @@ function createEmptyCommentGame(index: number): CommentGame {
   };
 }
 
+function extractPidstavaCards(round: any): any[] {
+  if (!round) return [];
+
+  let dataObj = round.data;
+  if (typeof dataObj === "string") {
+    try {
+      dataObj = JSON.parse(dataObj);
+    } catch {
+      dataObj = {};
+    }
+  }
+
+  const candidates = [
+    round.topics,
+    dataObj?.topics,
+    round.cards,
+    dataObj?.cards,
+    round.themes,
+    dataObj?.themes,
+    round.questions,
+    dataObj?.questions,
+    round.items,
+    dataObj?.items,
+  ];
+
+  for (const cand of candidates) {
+    if (!cand) continue;
+    let list = cand;
+    if (typeof list === "string") {
+      try {
+        list = JSON.parse(list);
+      } catch {
+        continue;
+      }
+    }
+    if (Array.isArray(list) && list.length > 0) {
+      return list;
+    }
+  }
+
+  return [];
+}
+
+function normalizePidstavaCard(c: any, i: number): PidstavaCard {
+  if (!c) return createEmptyCard(i);
+  if (typeof c === "string") {
+    return {
+      ...createEmptyCard(i),
+      topic: c,
+    };
+  }
+  const topic = (c.topic || c.title || c.name || c.theme || c.topic_name || `Тема ${i + 1}`).trim();
+  const easy_question = (c.easy_question || c.question_easy || c.easyQuestion || c.question || c.q_easy || c.q1 || "").trim();
+  const easy_answer = (c.easy_answer || c.correct_answer_easy || c.easyAnswer || c.answer_easy || c.answer || c.a_easy || c.a1 || "").trim();
+  const easy_fact = (c.easy_fact || c.fact_easy || c.easyFact || c.fact || c.fact1 || "").trim();
+  const hard_question = (c.hard_question || c.question_hard || c.hardQuestion || c.q_hard || c.q2 || "").trim();
+  const hard_answer = (c.hard_answer || c.correct_answer_hard || c.hardAnswer || c.answer_hard || c.a_hard || c.a2 || "").trim();
+  const hard_fact = (c.hard_fact || c.fact_hard || c.hardFact || c.fact2 || "").trim();
+
+  return {
+    id: c.id ?? i + 1,
+    topic: topic || `Тема ${i + 1}`,
+    easy_question,
+    easy_answer,
+    easy_fact,
+    hard_question,
+    hard_answer,
+    hard_fact,
+    question_easy: easy_question,
+    correct_answer_easy: easy_answer,
+    fact: easy_fact,
+    question_hard: hard_question,
+    correct_answer_hard: hard_answer,
+  };
+}
+
 const ROUND_DRAFT_KEY = "vkv_round_draft";
 
 const getDefaultEasyHardCards = (): PidstavaCard[] =>
@@ -383,24 +459,30 @@ export default function AdminPage() {
         .order("order_index", { ascending: true });
       if (error) throw error;
 
-      const normalizedRounds: Round[] = (data || []).map((r: any) => ({
-        ...r,
-        ...(r.data || {}),
-        cards:
-          r.cards ||
-          r.data?.cards ||
-          r.topics ||
-          r.data?.topics ||
-          r.themes ||
-          r.data?.themes ||
-          (r.type === "pidstava" || r.type === "easy_hard" ? r.questions || r.data?.questions : []) ||
-          [],
-        comment_games: r.comment_games || r.data?.comment_games || r.data?.games || r.games || [],
-        games: r.games || r.data?.games || r.data?.comment_games || r.comment_games || [],
-        blitz_questions: r.blitz_questions || r.data?.blitz_questions || r.data?.questions || r.questions || [],
-        questions: r.questions || r.data?.questions || r.data?.blitz_questions || r.blitz_questions || [],
-        timer_seconds: r.timer_seconds || r.data?.timer_seconds || r.data?.config?.timer_seconds || 71,
-      }));
+      const normalizedRounds: Round[] = (data || []).map((r: any) => {
+        let dataObj = r.data;
+        if (typeof dataObj === "string") {
+          try {
+            dataObj = JSON.parse(dataObj);
+          } catch {
+            dataObj = {};
+          }
+        }
+        const pidstavaCards = extractPidstavaCards(r);
+
+        return {
+          ...r,
+          ...(dataObj || {}),
+          cards: pidstavaCards,
+          topics: pidstavaCards,
+          themes: pidstavaCards,
+          comment_games: r.comment_games || dataObj?.comment_games || dataObj?.games || r.games || [],
+          games: r.games || dataObj?.games || dataObj?.comment_games || r.comment_games || [],
+          blitz_questions: r.blitz_questions || dataObj?.blitz_questions || dataObj?.questions || r.questions || [],
+          questions: r.questions || dataObj?.questions || dataObj?.blitz_questions || r.blitz_questions || [],
+          timer_seconds: r.timer_seconds || dataObj?.timer_seconds || dataObj?.config?.timer_seconds || 71,
+        };
+      });
 
       setRounds(normalizedRounds);
     } catch (err: any) {
@@ -664,18 +746,11 @@ export default function AdminPage() {
           throw new Error(`Заповніть тему та запитання для картки ${i + 1}`);
         }
       }
-      const normalizedCards = easyHardCards.map((c) => ({
-        topic: (c.topic || "").trim(),
-        easy_question: (c.easy_question || c.question_easy || "").trim(),
-        easy_answer: (c.easy_answer || c.correct_answer_easy || "").trim(),
-        easy_fact: (c.easy_fact || c.fact || "").trim(),
-        hard_question: (c.hard_question || c.question_hard || "").trim(),
-        hard_answer: (c.hard_answer || c.correct_answer_hard || "").trim(),
-        hard_fact: (c.hard_fact || "").trim(),
-      }));
+      const normalizedCards = easyHardCards.map((c, i) => normalizePidstavaCard(c, i));
       roundData = {
         cards: normalizedCards,
         topics: normalizedCards,
+        themes: normalizedCards,
         question: "Підстава (8 тем)",
       };
     } else if (roundType === "youtube_comments" || roundType === "comments") {
@@ -707,38 +782,21 @@ export default function AdminPage() {
   };
 
   const handleEditRound = (round: Round, idx: number) => {
+    console.log("Завантаження раунду для редагування:", round);
     setEditingRoundId(round.id);
     let label = `Раунд ${idx + 1}`;
 
     if (round.type === "easy_hard" || round.type === "pidstava") {
       setRoundType("easy_hard");
       label = `Підстава (Раунд ${idx + 1})`;
-      const rawCards =
-        round.cards ||
-        round.data?.cards ||
-        round.topics ||
-        round.data?.topics ||
-        round.themes ||
-        round.data?.themes ||
-        (round.type === "pidstava" || round.type === "easy_hard" ? round.questions || round.data?.questions : []) ||
-        [];
+      const loadedTopics = extractPidstavaCards(round);
+      console.log("Завантажені теми раунду 'Підстава' (loadedTopics):", loadedTopics);
 
-      if (Array.isArray(rawCards) && rawCards.length > 0) {
-        const fullCards: PidstavaCard[] = Array.from({ length: 8 }).map((_, i) => {
-          const c = (rawCards as any[])[i];
-          if (!c) {
-            return createEmptyCard(i);
-          }
-          return {
-            topic: c.topic || c.title || c.name || c.theme || `Тема ${i + 1}`,
-            easy_question: c.easy_question || c.question_easy || c.easyQuestion || c.question || "",
-            easy_answer: c.easy_answer || c.correct_answer_easy || c.easyAnswer || c.answer_easy || c.answer || "",
-            easy_fact: c.easy_fact || c.fact_easy || c.easyFact || c.fact || "",
-            hard_question: c.hard_question || c.question_hard || c.hardQuestion || "",
-            hard_answer: c.hard_answer || c.correct_answer_hard || c.hardAnswer || c.answer_hard || "",
-            hard_fact: c.hard_fact || c.fact_hard || c.hardFact || "",
-          };
-        });
+      if (Array.isArray(loadedTopics) && loadedTopics.length > 0) {
+        const fullCards: PidstavaCard[] = Array.from({ length: 8 }).map((_, i) =>
+          normalizePidstavaCard(loadedTopics[i], i)
+        );
+        console.log("Заповнені 8 карток для інпутів форми:", fullCards);
         setEasyHardCards(fullCards);
       } else {
         setEasyHardCards(getDefaultEasyHardCards());
@@ -1195,7 +1253,7 @@ export default function AdminPage() {
                           <div className="min-w-0 flex-1">
                             <span className="text-xs sm:text-sm font-black text-white block truncate">
                               {round.type === "easy_hard" || round.type === "pidstava"
-                                ? `Підстава (${(round.cards || round.data?.cards || round.topics || round.data?.topics || round.themes || round.data?.themes || []).length} тем)`
+                                ? `Підстава (${(round.topics || round.data?.topics || round.cards || round.data?.cards || extractPidstavaCards(round)).length} тем)`
                                 : round.type === "youtube_comments" || round.type === "comments"
                                   ? `Коментарі (${(round.comment_games || round.data?.games || []).length} гри)`
                                   : round.type === "blitz_5sec" || round.type === "blitz_5_10"
@@ -1389,11 +1447,14 @@ export default function AdminPage() {
                               <input
                                 type="text"
                                 placeholder="Яскрава / смішна назва теми..."
-                                value={easyHardCards[activeCardTab].topic}
+                                value={easyHardCards[activeCardTab]?.topic || ""}
                                 onChange={(e) => {
-                                  const next = [...easyHardCards];
-                                  next[activeCardTab] = { ...next[activeCardTab], topic: e.target.value };
-                                  setEasyHardCards(next);
+                                  const val = e.target.value;
+                                  setEasyHardCards((prev) => {
+                                    const next = [...prev];
+                                    next[activeCardTab] = { ...next[activeCardTab], topic: val };
+                                    return next;
+                                  });
                                 }}
                                 className="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-amber-500 font-bold"
                               />
@@ -1407,44 +1468,54 @@ export default function AdminPage() {
                               <input
                                 type="text"
                                 placeholder="Текст легкого запитання..."
-                                value={easyHardCards[activeCardTab].easy_question || easyHardCards[activeCardTab].question_easy || ""}
+                                value={easyHardCards[activeCardTab]?.easy_question || easyHardCards[activeCardTab]?.question_easy || ""}
                                 onChange={(e) => {
-                                  const next = [...easyHardCards];
-                                  next[activeCardTab] = {
-                                    ...next[activeCardTab],
-                                    easy_question: e.target.value,
-                                    question_easy: e.target.value,
-                                  };
-                                  setEasyHardCards(next);
+                                  const val = e.target.value;
+                                  setEasyHardCards((prev) => {
+                                    const next = [...prev];
+                                    next[activeCardTab] = {
+                                      ...next[activeCardTab],
+                                      easy_question: val,
+                                      question_easy: val,
+                                    };
+                                    return next;
+                                  });
                                 }}
                                 className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-emerald-500"
                               />
                               <input
                                 type="text"
                                 placeholder="Правильна відповідь на легке..."
-                                value={easyHardCards[activeCardTab].easy_answer || easyHardCards[activeCardTab].correct_answer_easy || ""}
+                                value={easyHardCards[activeCardTab]?.easy_answer || easyHardCards[activeCardTab]?.correct_answer_easy || ""}
                                 onChange={(e) => {
-                                  const next = [...easyHardCards];
-                                  next[activeCardTab] = {
-                                    ...next[activeCardTab],
-                                    easy_answer: e.target.value,
-                                    correct_answer_easy: e.target.value,
-                                  };
-                                  setEasyHardCards(next);
+                                  const val = e.target.value;
+                                  setEasyHardCards((prev) => {
+                                    const next = [...prev];
+                                    next[activeCardTab] = {
+                                      ...next[activeCardTab],
+                                      easy_answer: val,
+                                      correct_answer_easy: val,
+                                    };
+                                    return next;
+                                  });
                                 }}
                                 className="w-full bg-zinc-900 border border-emerald-500/30 rounded-lg px-2.5 py-1.5 text-xs text-emerald-300 font-semibold focus:outline-none focus:border-emerald-400"
                               />
                               <input
                                 type="text"
                                 placeholder="Цікавий факт до легкого запитання (необов'язково)..."
-                                value={easyHardCards[activeCardTab].easy_fact || ""}
+                                value={easyHardCards[activeCardTab]?.easy_fact || easyHardCards[activeCardTab]?.fact || ""}
                                 onChange={(e) => {
-                                  const next = [...easyHardCards];
-                                  next[activeCardTab] = {
-                                    ...next[activeCardTab],
-                                    easy_fact: e.target.value,
-                                  };
-                                  setEasyHardCards(next);
+                                  const val = e.target.value;
+                                  setEasyHardCards((prev) => {
+                                    const next = [...prev];
+                                    next[activeCardTab] = {
+                                      ...next[activeCardTab],
+                                      easy_fact: val,
+                                      fact: val,
+                                    };
+                                    return next;
+                                  });
                                 }}
                                 className="w-full bg-zinc-900 border border-emerald-500/20 rounded-lg px-2.5 py-1.5 text-xs text-zinc-300 focus:outline-none focus:border-emerald-400"
                               />
@@ -1458,44 +1529,53 @@ export default function AdminPage() {
                               <input
                                 type="text"
                                 placeholder="Текст складного запитання..."
-                                value={easyHardCards[activeCardTab].hard_question || easyHardCards[activeCardTab].question_hard || ""}
+                                value={easyHardCards[activeCardTab]?.hard_question || easyHardCards[activeCardTab]?.question_hard || ""}
                                 onChange={(e) => {
-                                  const next = [...easyHardCards];
-                                  next[activeCardTab] = {
-                                    ...next[activeCardTab],
-                                    hard_question: e.target.value,
-                                    question_hard: e.target.value,
-                                  };
-                                  setEasyHardCards(next);
+                                  const val = e.target.value;
+                                  setEasyHardCards((prev) => {
+                                    const next = [...prev];
+                                    next[activeCardTab] = {
+                                      ...next[activeCardTab],
+                                      hard_question: val,
+                                      question_hard: val,
+                                    };
+                                    return next;
+                                  });
                                 }}
                                 className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-rose-500"
                               />
                               <input
                                 type="text"
                                 placeholder="Правильна відповідь на складне..."
-                                value={easyHardCards[activeCardTab].hard_answer || easyHardCards[activeCardTab].correct_answer_hard || ""}
+                                value={easyHardCards[activeCardTab]?.hard_answer || easyHardCards[activeCardTab]?.correct_answer_hard || ""}
                                 onChange={(e) => {
-                                  const next = [...easyHardCards];
-                                  next[activeCardTab] = {
-                                    ...next[activeCardTab],
-                                    hard_answer: e.target.value,
-                                    correct_answer_hard: e.target.value,
-                                  };
-                                  setEasyHardCards(next);
+                                  const val = e.target.value;
+                                  setEasyHardCards((prev) => {
+                                    const next = [...prev];
+                                    next[activeCardTab] = {
+                                      ...next[activeCardTab],
+                                      hard_answer: val,
+                                      correct_answer_hard: val,
+                                    };
+                                    return next;
+                                  });
                                 }}
                                 className="w-full bg-zinc-900 border border-rose-500/30 rounded-lg px-2.5 py-1.5 text-xs text-rose-300 font-semibold focus:outline-none focus:border-rose-400"
                               />
                               <input
                                 type="text"
                                 placeholder="Цікавий факт до складного запитання (необов'язково)..."
-                                value={easyHardCards[activeCardTab].hard_fact || ""}
+                                value={easyHardCards[activeCardTab]?.hard_fact || ""}
                                 onChange={(e) => {
-                                  const next = [...easyHardCards];
-                                  next[activeCardTab] = {
-                                    ...next[activeCardTab],
-                                    hard_fact: e.target.value,
-                                  };
-                                  setEasyHardCards(next);
+                                  const val = e.target.value;
+                                  setEasyHardCards((prev) => {
+                                    const next = [...prev];
+                                    next[activeCardTab] = {
+                                      ...next[activeCardTab],
+                                      hard_fact: val,
+                                    };
+                                    return next;
+                                  });
                                 }}
                                 className="w-full bg-zinc-900 border border-rose-500/20 rounded-lg px-2.5 py-1.5 text-xs text-zinc-300 focus:outline-none focus:border-rose-400"
                               />
