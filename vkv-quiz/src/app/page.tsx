@@ -30,6 +30,7 @@ import {
   Users,
   UserCheck,
   Flag,
+  Sun,
 } from "lucide-react";
 
 // Web Audio API procedural sound synthesizer
@@ -315,6 +316,63 @@ export default function GamePage() {
     nextGuesser?: string;
   } | null>(null);
   const aliasTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // --- SCREEN WAKE LOCK API (Захист екрана від згасання під час гри) ---
+  const [isWakeLockActive, setIsWakeLockActive] = useState<boolean>(false);
+  const wakeLockSentinelRef = useRef<any>(null);
+
+  const requestWakeLock = async () => {
+    if (typeof window === "undefined" || !("wakeLock" in navigator)) return;
+    try {
+      if (wakeLockSentinelRef.current && !wakeLockSentinelRef.current.released) {
+        return;
+      }
+      const sentinel = await (navigator as any).wakeLock.request("screen");
+      wakeLockSentinelRef.current = sentinel;
+      setIsWakeLockActive(true);
+
+      sentinel.addEventListener("release", () => {
+        setIsWakeLockActive(false);
+      });
+    } catch (err) {
+      console.warn("Screen Wake Lock could not be acquired:", err);
+      setIsWakeLockActive(false);
+    }
+  };
+
+  const releaseWakeLock = async () => {
+    try {
+      if (wakeLockSentinelRef.current) {
+        await wakeLockSentinelRef.current.release();
+        wakeLockSentinelRef.current = null;
+      }
+    } catch (err) {
+      console.warn("Screen Wake Lock release error:", err);
+    } finally {
+      setIsWakeLockActive(false);
+    }
+  };
+
+  useEffect(() => {
+    if (gameState === "playing") {
+      requestWakeLock();
+    } else {
+      releaseWakeLock();
+    }
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible" && gameState === "playing") {
+        requestWakeLock();
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      releaseWakeLock();
+    };
+  }, [gameState]);
 
   // Save Settings to LocalStorage
   useEffect(() => {
@@ -1840,7 +1898,18 @@ export default function GamePage() {
               ВКВ
             </div>
             <div className="min-w-0">
-              <h1 className="text-xs sm:text-sm font-black text-white uppercase tracking-wider truncate">Шоу ВКВ 2026</h1>
+              <div className="flex items-center gap-1.5">
+                <h1 className="text-xs sm:text-sm font-black text-white uppercase tracking-wider truncate">Шоу ВКВ 2026</h1>
+                {isWakeLockActive && (
+                  <span
+                    className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-[9px] font-bold shadow-sm"
+                    title="Екран захищено від згасання (Screen Wake Lock активний)"
+                  >
+                    <Sun size={10} className="text-amber-400 animate-spin" style={{ animationDuration: "12s" }} />
+                    <span className="hidden xs:inline">Екран активний</span>
+                  </span>
+                )}
+              </div>
               <span className="text-[9px] text-indigo-400 font-bold uppercase tracking-wider block truncate">
                 {selectedGame ? selectedGame.name : "Вікторина"}
               </span>
