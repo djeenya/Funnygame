@@ -1889,82 +1889,88 @@ export default function GamePage() {
 
   // Main UI
   return (
-    <div className="min-h-screen bg-slate-950 text-zinc-50 flex flex-col font-sans select-none pb-20 touch-manipulation overflow-x-hidden w-full">
+    <div className="min-h-screen bg-slate-950 text-zinc-50 flex flex-col font-sans select-none pb-28 sm:pb-20 pb-[max(6rem,env(safe-area-inset-bottom,28px))] touch-manipulation overflow-x-hidden w-full">
       {/* Top Header */}
-      <header className="border-b border-zinc-900/80 bg-zinc-950/90 backdrop-blur-md px-3 sm:px-4 py-2 sm:py-3 sticky top-0 z-40">
-        <div className="max-w-5xl mx-auto flex flex-wrap items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-gradient-to-tr from-amber-500 to-indigo-600 flex items-center justify-center font-black text-slate-950 text-xs sm:text-sm shadow-md shadow-amber-500/20 flex-shrink-0">
-              ВКВ
-            </div>
-            <div className="min-w-0">
-              <div className="flex items-center gap-1.5">
-                <h1 className="text-xs sm:text-sm font-black text-white uppercase tracking-wider truncate">Шоу ВКВ 2026</h1>
-                {isWakeLockActive && (
-                  <span
-                    className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-[9px] font-bold shadow-sm"
-                    title="Екран захищено від згасання (Screen Wake Lock активний)"
-                  >
-                    <Sun size={10} className="text-amber-400 animate-spin" style={{ animationDuration: "12s" }} />
-                    <span className="hidden xs:inline">Екран активний</span>
-                  </span>
-                )}
+      <header className="border-b border-zinc-900/80 bg-zinc-950/95 backdrop-blur-md px-3 sm:px-4 py-2 sm:py-2.5 sticky top-0 z-40 shadow-sm">
+        <div className="max-w-5xl mx-auto flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+          {/* Top Level on Mobile / Left on Desktop: Logo, Title & Header Actions (Settings & Admin) */}
+          <div className="flex items-center justify-between w-full sm:w-auto gap-2">
+            <div className="flex items-center gap-2 min-w-0">
+              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-gradient-to-tr from-amber-500 to-indigo-600 flex items-center justify-center font-black text-slate-950 text-xs sm:text-sm shadow-md shadow-amber-500/20 flex-shrink-0">
+                ВКВ
               </div>
-              <span className="text-[9px] text-indigo-400 font-bold uppercase tracking-wider block truncate">
-                {selectedGame ? selectedGame.name : "Вікторина"}
-              </span>
+              <div className="min-w-0">
+                <div className="flex items-center gap-1.5">
+                  <h1 className="text-xs sm:text-sm font-black text-white uppercase tracking-wider truncate">Шоу ВКВ 2026</h1>
+                  {isWakeLockActive && (
+                    <span
+                      className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-[9px] font-bold shadow-sm flex-shrink-0"
+                      title="Екран захищено від згасання (Screen Wake Lock активний)"
+                    >
+                      <Sun size={10} className="text-amber-400 animate-spin" style={{ animationDuration: "12s" }} />
+                      <span className="hidden xs:inline">Екран активний</span>
+                    </span>
+                  )}
+                </div>
+                <span className="text-[9px] text-indigo-400 font-bold uppercase tracking-wider block truncate">
+                  {selectedGame ? selectedGame.name : "Вікторина"}
+                </span>
+              </div>
+            </div>
+
+            {/* Quick Action Buttons (Right side on mobile & desktop) */}
+            <div className="flex items-center gap-1.5 flex-shrink-0">
+              <button
+                onClick={() => setEditingSettingsModal(true)}
+                className="p-2 min-h-[36px] min-w-[36px] bg-zinc-900 hover:bg-zinc-800 active:scale-95 text-zinc-400 hover:text-white rounded-lg border border-zinc-800 transition cursor-pointer flex items-center justify-center"
+                title="Налаштування команд та учасників"
+              >
+                <Settings size={15} />
+              </button>
+
+              <button
+                onClick={() => {
+                  if (typeof window !== "undefined") window.location.href = "/admin";
+                }}
+                className="text-xs min-h-[36px] bg-zinc-900 hover:bg-zinc-800 active:scale-95 text-zinc-300 hover:text-white border border-zinc-800 px-2.5 py-1.5 rounded-lg transition font-semibold cursor-pointer flex items-center justify-center"
+              >
+                Адмінка
+              </button>
             </div>
           </div>
 
-          {/* Teams Scoreboard in Header */}
-          <div className="flex items-center gap-1.5 sm:gap-3 flex-wrap">
-            <div className="flex items-center bg-zinc-900 border border-zinc-800 rounded-xl p-0.5 sm:p-1 gap-0.5 sm:gap-1 shadow-inner">
+          {/* Bottom Level on Mobile / Right on Desktop: Compact Scoreboard */}
+          <div className="flex items-center justify-between sm:justify-end gap-1.5 w-full sm:w-auto">
+            <div className="flex items-center bg-zinc-900/90 border border-zinc-800 rounded-xl p-0.5 sm:p-1 gap-1 shadow-inner w-full sm:w-auto justify-between sm:justify-start">
               <button
                 onClick={() => setScores((s) => ({ ...s, team1: s.team1 + 1 }))}
-                className="px-2 sm:px-2.5 py-1 min-h-[38px] sm:min-h-[40px] rounded-lg bg-indigo-950/40 border border-indigo-500/30 text-indigo-400 font-bold text-xs sm:text-sm flex items-center gap-1 sm:gap-1.5 cursor-pointer hover:bg-indigo-900/40 active:scale-95 transition"
+                className="flex-1 sm:flex-initial px-2 sm:px-2.5 py-1 min-h-[36px] sm:min-h-[38px] rounded-lg bg-indigo-950/40 border border-indigo-500/30 text-indigo-400 font-bold text-xs sm:text-sm flex items-center justify-between sm:justify-start gap-1 sm:gap-1.5 cursor-pointer hover:bg-indigo-900/40 active:scale-95 transition"
                 title={`Додати бал для ${gameSettings.team1.name}`}
               >
-                <span className="truncate max-w-[65px] xs:max-w-[85px] sm:max-w-[120px]">{gameSettings.team1.name}:</span>
-                <span className="text-xs sm:text-sm font-black font-mono">{scores.team1}</span>
+                <span className="truncate max-w-[95px] xs:max-w-[120px] sm:max-w-[140px] text-left">{gameSettings.team1.name}:</span>
+                <span className="text-xs sm:text-sm font-black font-mono flex-shrink-0">{scores.team1}</span>
               </button>
 
-              <span className="text-zinc-600 font-bold text-xs px-0.5">:</span>
+              <span className="text-zinc-600 font-bold text-xs px-0.5 flex-shrink-0">:</span>
 
               <button
                 onClick={() => setScores((s) => ({ ...s, team2: s.team2 + 1 }))}
-                className="px-2 sm:px-2.5 py-1 min-h-[38px] sm:min-h-[40px] rounded-lg bg-rose-950/40 border border-rose-500/30 text-rose-400 font-bold text-xs sm:text-sm flex items-center gap-1 sm:gap-1.5 cursor-pointer hover:bg-rose-900/40 active:scale-95 transition"
+                className="flex-1 sm:flex-initial px-2 sm:px-2.5 py-1 min-h-[36px] sm:min-h-[38px] rounded-lg bg-rose-950/40 border border-rose-500/30 text-rose-400 font-bold text-xs sm:text-sm flex items-center justify-between sm:justify-start gap-1 sm:gap-1.5 cursor-pointer hover:bg-rose-900/40 active:scale-95 transition"
                 title={`Додати бал для ${gameSettings.team2.name}`}
               >
-                <span className="truncate max-w-[65px] xs:max-w-[85px] sm:max-w-[120px]">{gameSettings.team2.name}:</span>
-                <span className="text-xs sm:text-sm font-black font-mono">{scores.team2}</span>
+                <span className="truncate max-w-[95px] xs:max-w-[120px] sm:max-w-[140px] text-left">{gameSettings.team2.name}:</span>
+                <span className="text-xs sm:text-sm font-black font-mono flex-shrink-0">{scores.team2}</span>
               </button>
 
-              {/* Компактна стильна кнопка скидання рахунку */}
+              {/* Reset Scores Button */}
               <button
                 onClick={() => resetScores(false)}
-                className="p-1.5 min-h-[38px] min-w-[34px] sm:min-w-[38px] bg-zinc-800/80 hover:bg-zinc-700/80 text-zinc-400 hover:text-amber-400 active:scale-95 rounded-lg border border-zinc-700/50 transition cursor-pointer flex items-center justify-center group"
+                className="p-1.5 min-h-[36px] min-w-[34px] sm:min-w-[36px] bg-zinc-800/80 hover:bg-zinc-700/80 text-zinc-400 hover:text-amber-400 active:scale-95 rounded-lg border border-zinc-700/50 transition cursor-pointer flex items-center justify-center group flex-shrink-0"
                 title="Скинути рахунок обох команд до 0"
               >
                 <RotateCcw size={13} className="group-hover:rotate-[-45deg] transition-transform duration-200" />
               </button>
             </div>
-
-            <button
-              onClick={() => setEditingSettingsModal(true)}
-              className="p-2 min-h-[38px] min-w-[38px] bg-zinc-900 hover:bg-zinc-800 active:scale-95 text-zinc-400 hover:text-white rounded-lg border border-zinc-800 transition cursor-pointer flex items-center justify-center"
-              title="Налаштування команд та учасників"
-            >
-              <Settings size={15} />
-            </button>
-
-            <button
-              onClick={() => {
-                if (typeof window !== "undefined") window.location.href = "/admin";
-              }}
-              className="text-xs min-h-[38px] bg-zinc-900 hover:bg-zinc-800 active:scale-95 text-zinc-300 border border-zinc-800 px-2.5 py-1.5 rounded-lg transition font-semibold cursor-pointer flex items-center justify-center"
-            >
-              Адмінка
-            </button>
           </div>
         </div>
       </header>
@@ -2181,35 +2187,35 @@ export default function GamePage() {
             </div>
 
             {/* Game Selector Section */}
-            <div className="bg-zinc-900 border border-zinc-800 p-4 sm:p-5 rounded-3xl space-y-3 shadow-xl">
+            <div className="bg-zinc-900 border border-zinc-800 p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl space-y-2.5 sm:space-y-3 shadow-xl">
               <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest block">
                 1. Оберіть гру з бази даних
               </label>
 
               {loading ? (
-                <div className="py-6 text-zinc-500 flex items-center justify-center gap-2">
-                  <Loader2 size={18} className="animate-spin" />
+                <div className="py-4 text-zinc-500 flex items-center justify-center gap-2">
+                  <Loader2 size={16} className="animate-spin" />
                   <span className="text-xs">Завантаження списку ігор...</span>
                 </div>
               ) : games.length === 0 ? (
-                <div className="p-4 bg-zinc-950 border border-dashed border-zinc-800 rounded-2xl text-center space-y-2">
+                <div className="p-3.5 bg-zinc-950 border border-dashed border-zinc-800 rounded-xl text-center space-y-2">
                   <p className="text-xs text-zinc-400">Ігор ще не створено.</p>
                   <button
                     onClick={() => {
                       if (typeof window !== "undefined") window.location.href = "/admin";
                     }}
-                    className="px-4 py-2.5 min-h-[44px] bg-indigo-600 text-white rounded-xl text-xs font-bold uppercase"
+                    className="px-4 py-2 min-h-[40px] bg-indigo-600 text-white rounded-xl text-xs font-bold uppercase"
                   >
                     Перейти в адмінку
                   </button>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-2.5">
                   {games.map((g) => (
                     <button
                       key={g.id}
                       onClick={() => handleSelectGame(g)}
-                      className={`p-3 sm:p-3.5 min-h-[48px] rounded-2xl border text-left flex items-center justify-between transition cursor-pointer active:scale-95 ${selectedGameId === g.id
+                      className={`p-2.5 sm:p-3 min-h-[42px] sm:min-h-[46px] rounded-xl sm:rounded-2xl border text-left flex items-center justify-between transition cursor-pointer active:scale-95 ${selectedGameId === g.id
                         ? "bg-indigo-950/40 border-indigo-500 text-white shadow-md shadow-indigo-950/30"
                         : "bg-zinc-950/60 border-zinc-800 hover:border-zinc-700 text-zinc-300"
                         }`}
