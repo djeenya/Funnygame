@@ -180,6 +180,21 @@ function createEmptyCommentGame(index: number): CommentGame {
   };
 }
 
+const ROUND_DRAFT_KEY = "vkv_round_draft";
+
+const getDefaultEasyHardCards = (): PidstavaCard[] =>
+  Array.from({ length: 8 }, (_, i) => createEmptyCard(i));
+
+const getDefaultCommentGames = (): CommentGame[] =>
+  Array.from({ length: 4 }, (_, i) => createEmptyCommentGame(i));
+
+const getDefaultBlitzQuestions = (): BlitzQuestion[] =>
+  DEFAULT_DEMO_BLITZ.map((q) => ({ question: q.question }));
+
+const getDefaultAliasForm = () => ({
+  question: "Еліас: Поясни якомога більше слів за 01:11 (71 секунду, паперові картки)",
+});
+
 export default function AdminPage() {
   const [password, setPassword] = useState<string>("");
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
@@ -201,23 +216,97 @@ export default function AdminPage() {
   const [newGameName, setNewGameName] = useState<string>("");
   const [roundType, setRoundType] = useState<RoundType>("easy_hard");
 
-  const [easyHardCards, setEasyHardCards] = useState<PidstavaCard[]>(() =>
-    Array.from({ length: 8 }, (_, i) => createEmptyCard(i)),
-  );
+  const [easyHardCards, setEasyHardCards] = useState<PidstavaCard[]>(() => getDefaultEasyHardCards());
   const [activeCardTab, setActiveCardTab] = useState<number>(0);
 
-  const [commentGames, setCommentGames] = useState<CommentGame[]>(() =>
-    Array.from({ length: 4 }, (_, i) => createEmptyCommentGame(i)),
-  );
+  const [commentGames, setCommentGames] = useState<CommentGame[]>(() => getDefaultCommentGames());
   const [activeCommentTab, setActiveCommentTab] = useState<number>(0);
 
-  const [blitzQuestions, setBlitzQuestions] = useState<BlitzQuestion[]>(() =>
-    DEFAULT_DEMO_BLITZ.map((q) => ({ question: q.question })),
-  );
+  const [blitzQuestions, setBlitzQuestions] = useState<BlitzQuestion[]>(() => getDefaultBlitzQuestions());
 
-  const [aliasForm, setAliasForm] = useState({
-    question: "Еліас: Поясни якомога більше слів за 01:11 (71 секунду, паперові картки)",
-  });
+  const [aliasForm, setAliasForm] = useState(getDefaultAliasForm());
+  const [draftRestored, setDraftRestored] = useState<boolean>(false);
+
+  // Restore draft from localStorage on initial mount
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const rawDraft = localStorage.getItem(ROUND_DRAFT_KEY);
+        if (rawDraft) {
+          const draft = JSON.parse(rawDraft);
+          if (draft.roundType) setRoundType(draft.roundType);
+          if (typeof draft.activeCardTab === "number") setActiveCardTab(draft.activeCardTab);
+          if (typeof draft.activeCommentTab === "number") setActiveCommentTab(draft.activeCommentTab);
+          if (Array.isArray(draft.easyHardCards) && draft.easyHardCards.length === 8) {
+            setEasyHardCards(draft.easyHardCards);
+          }
+          if (Array.isArray(draft.commentGames) && draft.commentGames.length === 4) {
+            setCommentGames(draft.commentGames);
+          }
+          if (Array.isArray(draft.blitzQuestions) && draft.blitzQuestions.length > 0) {
+            setBlitzQuestions(draft.blitzQuestions);
+          }
+          if (draft.aliasForm && typeof draft.aliasForm.question === "string") {
+            setAliasForm(draft.aliasForm);
+          }
+        }
+      } catch (err) {
+        console.error("Помилка відновлення чернетки раунду:", err);
+      } finally {
+        setDraftRestored(true);
+      }
+    } else {
+      setDraftRestored(true);
+    }
+  }, []);
+
+  // Auto-save form draft whenever any field or active tab changes
+  useEffect(() => {
+    if (!draftRestored || typeof window === "undefined") return;
+    try {
+      const draftData = {
+        roundType,
+        activeCardTab,
+        activeCommentTab,
+        easyHardCards,
+        commentGames,
+        blitzQuestions,
+        aliasForm,
+        savedAt: new Date().toISOString(),
+      };
+      localStorage.setItem(ROUND_DRAFT_KEY, JSON.stringify(draftData));
+    } catch (err) {
+      console.error("Помилка автозбереження чернетки раунду:", err);
+    }
+  }, [
+    draftRestored,
+    roundType,
+    activeCardTab,
+    activeCommentTab,
+    easyHardCards,
+    commentGames,
+    blitzQuestions,
+    aliasForm,
+  ]);
+
+  const handleResetRoundForm = (showConfirm = false) => {
+    if (showConfirm && typeof window !== "undefined") {
+      const confirmed = window.confirm("Очистити всю введену інформацію у формі та скинути чернетку?");
+      if (!confirmed) return;
+    }
+    setEasyHardCards(getDefaultEasyHardCards());
+    setActiveCardTab(0);
+    setCommentGames(getDefaultCommentGames());
+    setActiveCommentTab(0);
+    setBlitzQuestions(getDefaultBlitzQuestions());
+    setAliasForm(getDefaultAliasForm());
+    if (typeof window !== "undefined") {
+      localStorage.removeItem(ROUND_DRAFT_KEY);
+    }
+    if (showConfirm) {
+      setSuccessMessage("Чернетку форми успішно очищено!");
+    }
+  };
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -602,6 +691,7 @@ export default function AdminPage() {
       }
 
       setSuccessMessage(`Раунд успішно додано до "${selectedGame.name}"!`);
+      handleResetRoundForm(false);
       await fetchRounds(selectedGame.id);
     } catch (err: any) {
       console.error("handleAddRound error:", err);
@@ -951,10 +1041,28 @@ export default function AdminPage() {
 
               {/* Add Round Constructor */}
               <div className="bg-zinc-900 border border-zinc-800/80 rounded-2xl p-4 sm:p-5 shadow-lg">
-                <h3 className="text-sm font-black text-white uppercase tracking-wider mb-4 flex items-center gap-1.5">
-                  <PlusCircle size={16} className="text-indigo-400" />
-                  <span>Додати Новий Раунд</span>
-                </h3>
+                <div className="flex items-center justify-between mb-4 pb-2 border-b border-zinc-800/60 flex-wrap gap-2">
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-sm font-black text-white uppercase tracking-wider flex items-center gap-1.5">
+                      <PlusCircle size={16} className="text-indigo-400" />
+                      <span>Додати Новий Раунд</span>
+                    </h3>
+                    <span className="text-[10px] text-zinc-500 font-bold hidden sm:inline-flex items-center gap-1 bg-zinc-950 px-2 py-0.5 rounded-md border border-zinc-800">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                      Автозбереження чернетки
+                    </span>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => handleResetRoundForm(true)}
+                    className="px-2.5 py-1 text-zinc-400 hover:text-rose-400 hover:bg-rose-950/20 border border-zinc-800 hover:border-rose-500/30 rounded-lg text-xs font-bold transition cursor-pointer flex items-center gap-1.5 touch-manipulation active:scale-95"
+                    title="Скинути чернетку та очистити всі поля"
+                  >
+                    <Trash2 size={13} />
+                    <span>Очистити форму</span>
+                  </button>
+                </div>
 
                 <form onSubmit={handleAddRound} className="flex flex-col gap-5">
                   {/* Round Type Tabs */}
