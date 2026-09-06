@@ -779,8 +779,8 @@ export default function GamePage() {
     if (easyHardActiveCardIdx === null) {
       return (
         <div className="flex flex-col gap-4 sm:gap-6 w-full animate-fadeIn">
-          {/* Header Turn Banner */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-zinc-950 p-3.5 sm:p-4 rounded-2xl border border-zinc-800/80 shadow-lg">
+          {/* Header Turn Banner with Amber Neon Theme */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-zinc-900/80 backdrop-blur-md p-3.5 sm:p-4 rounded-2xl border border-amber-500/50 shadow-[0_0_30px_rgba(245,158,11,0.15)]">
             <div className="space-y-1">
               <div className="flex flex-wrap items-center gap-2">
                 <span className="px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 text-[10px] sm:text-xs font-bold uppercase tracking-wider flex items-center gap-1.5">
@@ -823,16 +823,16 @@ export default function GamePage() {
                     setEasyHardJudgmentGiven(null);
                     playBeep(650, 0.1, "sine");
                   }}
-                  className={`p-4 sm:p-5 rounded-2xl text-left transition flex flex-col justify-between min-h-[110px] sm:min-h-[140px] relative overflow-hidden shadow-xl ${isPlayed
-                      ? "bg-zinc-950/60 border border-zinc-900 text-zinc-600 opacity-40 cursor-not-allowed"
-                      : "bg-gradient-to-br from-amber-400 via-amber-500 to-orange-500 hover:from-amber-300 hover:via-amber-400 hover:to-orange-400 active:scale-95 text-slate-950 border-2 border-amber-300 hover:border-white cursor-pointer hover:scale-[1.02] transition duration-200"
+                  className={`p-4 sm:p-5 rounded-2xl text-left transition-all duration-200 flex flex-col justify-between min-h-[110px] sm:min-h-[140px] relative overflow-hidden shadow-xl ${isPlayed
+                    ? "bg-zinc-950/60 border border-zinc-900 text-zinc-600 opacity-40 cursor-not-allowed"
+                    : "bg-gradient-to-br from-amber-400 via-amber-500 to-orange-500 hover:from-amber-300 hover:via-amber-400 hover:to-orange-400 active:scale-95 text-slate-950 border-2 border-amber-300 hover:border-white cursor-pointer hover:scale-[1.02] shadow-lg shadow-amber-500/20"
                     }`}
                 >
                   <div className="flex items-center justify-between w-full">
                     <span
                       className={`w-7 h-7 rounded-xl flex items-center justify-center font-mono font-black text-xs shadow-inner ${isPlayed
-                          ? "bg-zinc-900 text-zinc-600 border border-zinc-800"
-                          : "bg-slate-950 text-amber-400 border border-amber-400/40"
+                        ? "bg-zinc-900 text-zinc-600 border border-zinc-800"
+                        : "bg-slate-950 text-amber-400 border border-amber-400/40"
                         }`}
                     >
                       #{idx + 1}
@@ -875,7 +875,7 @@ export default function GamePage() {
           <div className="flex items-center justify-between w-full pb-3 border-b border-zinc-800/80">
             <button
               onClick={() => setEasyHardActiveCardIdx(null)}
-              className="text-xs text-zinc-400 hover:text-white flex items-center gap-1 cursor-pointer py-1.5 px-2 rounded-lg hover:bg-zinc-900"
+              className="text-xs text-zinc-400 hover:text-white flex items-center gap-1 cursor-pointer py-1.5 px-2 rounded-lg hover:bg-zinc-900 active:scale-95 transition-all"
             >
               <ChevronLeft size={14} /> Назад до тем
             </button>
@@ -884,11 +884,11 @@ export default function GamePage() {
             </span>
           </div>
 
-          <div className="bg-gradient-to-br from-amber-400 via-amber-500 to-orange-500 text-slate-950 p-5 sm:p-6 rounded-3xl border-2 border-amber-300 w-full shadow-2xl">
-            <span className="text-[10px] font-black text-amber-950/80 uppercase tracking-widest block">
+          <div className="bg-zinc-900/80 backdrop-blur-md text-white p-5 sm:p-6 rounded-3xl border-2 border-amber-500/50 shadow-[0_0_30px_rgba(245,158,11,0.15)] w-full">
+            <span className="text-[10px] font-black text-amber-400 uppercase tracking-widest block">
               Обрана тема підстави
             </span>
-            <h3 className="text-xl sm:text-2xl md:text-3xl font-black mt-1 uppercase tracking-tight">
+            <h3 className="text-xl sm:text-2xl md:text-3xl font-black mt-1 uppercase tracking-tight text-white drop-shadow-md">
               {activeCard.topic}
             </h3>
           </div>
@@ -905,7 +905,7 @@ export default function GamePage() {
                 setEasyHardDifficulty("easy");
                 playBeep(700, 0.15, "sine");
               }}
-              className="p-5 sm:p-6 min-h-[72px] rounded-3xl bg-emerald-950/30 hover:bg-emerald-900/40 active:scale-95 border-2 border-emerald-500/40 hover:border-emerald-400 text-white transition flex flex-col items-center justify-center gap-2 cursor-pointer shadow-xl shadow-emerald-950/30 group hover:scale-[1.02]"
+              className="p-5 sm:p-6 min-h-[72px] rounded-3xl bg-emerald-950/30 hover:bg-emerald-900/40 active:scale-95 border-2 border-emerald-500/40 hover:border-emerald-400 text-white transition-all duration-200 flex flex-col items-center justify-center gap-2 cursor-pointer shadow-xl shadow-emerald-950/30 group hover:scale-[1.02]"
             >
               <span className="px-3 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] font-black uppercase tracking-wider">
                 Рівень 1
@@ -923,7 +923,7 @@ export default function GamePage() {
                 setEasyHardDifficulty("hard");
                 playBeep(500, 0.15, "sine");
               }}
-              className="p-5 sm:p-6 min-h-[72px] rounded-3xl bg-rose-950/30 hover:bg-rose-900/40 active:scale-95 border-2 border-rose-500/40 hover:border-rose-400 text-white transition flex flex-col items-center justify-center gap-2 cursor-pointer shadow-xl shadow-rose-950/30 group hover:scale-[1.02]"
+              className="p-5 sm:p-6 min-h-[72px] rounded-3xl bg-rose-950/30 hover:bg-rose-900/40 active:scale-95 border-2 border-rose-500/40 hover:border-rose-400 text-white transition-all duration-200 flex flex-col items-center justify-center gap-2 cursor-pointer shadow-xl shadow-rose-950/30 group hover:scale-[1.02]"
             >
               <span className="px-3 py-0.5 rounded-full bg-rose-500/20 text-rose-400 text-[10px] font-black uppercase tracking-wider">
                 Рівень 2
@@ -968,8 +968,8 @@ export default function GamePage() {
             </span>
             <span
               className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider ${easyHardDifficulty === "easy"
-                  ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
-                  : "bg-rose-500/20 text-rose-400 border border-rose-500/30"
+                ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
+                : "bg-rose-500/20 text-rose-400 border border-rose-500/30"
                 }`}
             >
               {easyHardDifficulty === "easy" ? "Легке (+1 бал)" : "Складне (+2 бали)"}
@@ -983,18 +983,18 @@ export default function GamePage() {
           </span>
         </div>
 
-        {/* Central High-Contrast TV Banner for the Question */}
-        <div className="bg-white text-slate-950 p-5 sm:p-8 md:p-10 rounded-2xl sm:rounded-3xl shadow-2xl border-4 border-amber-400 text-center relative overflow-hidden">
-          <span className="text-[9px] sm:text-[10px] font-black tracking-widest text-amber-600 uppercase block mb-1.5">
+        {/* Central Frosted Glass Neon TV Banner for the Question */}
+        <div className="bg-zinc-900/90 backdrop-blur-md text-zinc-100 p-5 sm:p-8 md:p-10 rounded-2xl sm:rounded-3xl shadow-2xl border-2 border-amber-500/60 shadow-[0_0_30px_rgba(245,158,11,0.2)] text-center relative overflow-hidden transition-all duration-300 ease-out">
+          <span className="text-[9px] sm:text-[10px] font-black tracking-widest text-amber-400 uppercase block mb-2">
             Шоу ВКВ • Запитання
           </span>
-          <h3 className="text-lg sm:text-2xl md:text-3xl font-black leading-snug uppercase tracking-tight">
+          <h3 className="text-lg sm:text-2xl md:text-3xl font-bold leading-relaxed text-zinc-100">
             {questionText}
           </h3>
         </div>
 
         {/* Host Guidance: Correct Answer Box */}
-        <div className="p-3.5 sm:p-5 bg-emerald-950/20 border-2 border-emerald-500/40 rounded-2xl flex flex-col gap-1 shadow-lg">
+        <div className="p-3.5 sm:p-5 bg-emerald-950/30 border-2 border-emerald-500/40 rounded-2xl flex flex-col gap-1 shadow-lg backdrop-blur-sm">
           <span className="text-[10px] font-black text-emerald-400 uppercase tracking-widest flex items-center gap-1.5">
             <CheckCircle2 size={14} /> Правильна відповідь (для ведучого):
           </span>
@@ -1005,13 +1005,13 @@ export default function GamePage() {
 
         {/* Host Guidance: Specific Interesting Fact */}
         {currentFact && (
-          <div className="p-3.5 sm:p-4 bg-blue-950/20 border border-blue-500/30 rounded-2xl flex items-start gap-3 shadow-md animate-fadeIn">
-            <Info size={18} className="text-blue-400 flex-shrink-0 mt-0.5" />
+          <div className="p-3.5 sm:p-4 bg-amber-950/20 border border-amber-500/30 rounded-2xl flex items-start gap-3 shadow-md animate-fadeIn backdrop-blur-sm">
+            <Info size={18} className="text-amber-400 flex-shrink-0 mt-0.5" />
             <div>
-              <span className="text-[10px] font-bold text-blue-400 uppercase tracking-widest block">
+              <span className="text-[10px] font-bold text-amber-400 uppercase tracking-widest block">
                 Цікавий факт ({easyHardDifficulty === "easy" ? "до легкого" : "до складного"}):
               </span>
-              <p className="text-xs sm:text-sm font-medium text-blue-200 mt-0.5 leading-relaxed">
+              <p className="text-xs sm:text-sm font-medium text-amber-200/90 mt-0.5 leading-relaxed">
                 {currentFact}
               </p>
             </div>
@@ -1031,7 +1031,7 @@ export default function GamePage() {
                 playChime();
                 confetti({ particleCount: 50, spread: 70, origin: { y: 0.7 } });
               }}
-              className="py-3.5 sm:py-4 min-h-[48px] sm:min-h-[54px] bg-emerald-600 hover:bg-emerald-500 active:scale-[0.98] text-white rounded-2xl font-black text-xs sm:text-base transition cursor-pointer shadow-xl shadow-emerald-600/20 flex items-center justify-center gap-2 uppercase tracking-wider"
+              className="py-3.5 sm:py-4 min-h-[48px] sm:min-h-[54px] bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white rounded-2xl font-black text-xs sm:text-base transition-all duration-150 cursor-pointer shadow-xl shadow-emerald-600/30 flex items-center justify-center gap-2 uppercase tracking-wider border border-emerald-400/30 hover:shadow-[0_0_20px_rgba(16,185,129,0.3)]"
             >
               <CheckCircle2 size={20} />
               <span>Зарахувати (+{rewardPoints} {rewardPoints === 1 ? "бал" : "бали"})</span>
@@ -1042,7 +1042,7 @@ export default function GamePage() {
                 setEasyHardJudgmentGiven(false);
                 playBuzzer();
               }}
-              className="py-3.5 sm:py-4 min-h-[48px] sm:min-h-[54px] bg-rose-600 hover:bg-rose-500 active:scale-[0.98] text-white rounded-2xl font-black text-xs sm:text-base transition cursor-pointer shadow-xl shadow-rose-600/20 flex items-center justify-center gap-2 uppercase tracking-wider"
+              className="py-3.5 sm:py-4 min-h-[48px] sm:min-h-[54px] bg-rose-600 hover:bg-rose-500 active:scale-95 text-white rounded-2xl font-black text-xs sm:text-base transition-all duration-150 cursor-pointer shadow-xl shadow-rose-600/30 flex items-center justify-center gap-2 uppercase tracking-wider border border-rose-400/30 hover:shadow-[0_0_20px_rgba(244,63,94,0.3)]"
             >
               <XCircle size={20} />
               <span>Не зараховувати (0)</span>
@@ -1052,8 +1052,8 @@ export default function GamePage() {
           <div className="flex flex-col items-center gap-3 w-full animate-fadeIn mt-2">
             <div
               className={`p-3.5 sm:p-4 rounded-2xl border text-xs sm:text-sm font-black text-center w-full shadow-lg ${easyHardJudgmentGiven
-                  ? "bg-emerald-950/40 border-emerald-500/40 text-emerald-300"
-                  : "bg-rose-950/40 border-rose-500/40 text-rose-300"
+                ? "bg-emerald-950/40 border-emerald-500/40 text-emerald-300"
+                : "bg-rose-950/40 border-rose-500/40 text-rose-300"
                 }`}
             >
               {easyHardJudgmentGiven ? (
@@ -1072,7 +1072,7 @@ export default function GamePage() {
                 setEasyHardChoosingTeam((prev) => (prev === "team1" ? "team2" : "team1"));
                 playBeep(600, 0.1, "sine");
               }}
-              className="w-full py-3.5 sm:py-4 min-h-[48px] sm:min-h-[52px] bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 active:scale-[0.98] text-slate-950 rounded-2xl font-black text-xs sm:text-sm uppercase tracking-wider transition cursor-pointer shadow-xl shadow-amber-500/20 flex items-center justify-center gap-2"
+              className="w-full py-3.5 sm:py-4 min-h-[48px] sm:min-h-[52px] bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 active:scale-95 text-slate-950 rounded-2xl font-black text-xs sm:text-sm uppercase tracking-wider transition-all duration-150 cursor-pointer shadow-xl shadow-amber-500/20 flex items-center justify-center gap-2"
             >
               <span>Завершити хід та передати іншій команді</span>
               <ChevronRight size={18} />
@@ -1108,11 +1108,11 @@ export default function GamePage() {
     if (isRoundFinished) {
       return (
         <div className="flex flex-col items-center justify-center gap-6 py-6 sm:py-8 animate-fadeIn w-full text-center px-2">
-          <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-rose-600 flex items-center justify-center text-white shadow-xl shadow-rose-600/20 mb-2">
+          <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-emerald-600 flex items-center justify-center text-white shadow-xl shadow-emerald-600/20 mb-2">
             <Trophy size={30} />
           </div>
           <div>
-            <span className="px-3 py-1 rounded-full bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs font-bold uppercase tracking-wider">
+            <span className="px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-bold uppercase tracking-wider">
               Раунд 2 Завершено!
             </span>
             <h2 className="text-2xl sm:text-3xl font-black text-white mt-3">Усі 4 гри «Коментарів» зіграно</h2>
@@ -1120,7 +1120,7 @@ export default function GamePage() {
           </div>
           <button
             onClick={nextRound}
-            className="w-full sm:w-auto px-6 py-3.5 min-h-[48px] rounded-xl bg-rose-600 hover:bg-rose-500 active:scale-95 text-white font-extrabold text-xs sm:text-sm transition cursor-pointer shadow-lg shadow-rose-600/20 flex items-center justify-center gap-1.5 uppercase tracking-wider"
+            className="w-full sm:w-auto px-6 py-3.5 min-h-[48px] rounded-xl bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white font-extrabold text-xs sm:text-sm transition cursor-pointer shadow-lg shadow-emerald-600/20 flex items-center justify-center gap-1.5 uppercase tracking-wider"
           >
             Раунд 3: 5/10 <ChevronRight size={16} />
           </button>
@@ -1139,11 +1139,11 @@ export default function GamePage() {
 
     return (
       <div className="flex flex-col gap-4 sm:gap-6 w-full animate-fadeIn max-w-3xl mx-auto px-1">
-        {/* Top Header & Turn Indicator */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-zinc-950 p-3.5 sm:p-4 rounded-2xl border border-zinc-800/80 shadow-lg">
+        {/* Top Header & Turn Indicator with Emerald Neon Theme */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-zinc-900/80 backdrop-blur-md p-3.5 sm:p-4 rounded-2xl border border-emerald-500/50 shadow-[0_0_30px_rgba(16,185,129,0.15)]">
           <div className="space-y-1">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="px-2.5 py-1 rounded-full bg-rose-500/10 border border-rose-500/30 text-rose-400 text-[10px] sm:text-xs font-bold uppercase tracking-wider flex items-center gap-1.5">
+              <span className="px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-[10px] sm:text-xs font-bold uppercase tracking-wider flex items-center gap-1.5">
                 <MessageCircle size={13} />
                 Раунд 2: Коментарі • Гра {commentsGameIndex + 1}/4
               </span>
@@ -1160,7 +1160,7 @@ export default function GamePage() {
           </div>
 
           <div className="flex items-center gap-2 flex-shrink-0">
-            <span className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 text-xs font-black font-mono shadow-md shadow-amber-500/20">
+            <span className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 text-xs font-black font-mono shadow-md shadow-emerald-500/20">
               Поточна вартість: +{currentRewardPoints} {currentRewardPoints === 1 ? "бал" : "бали"}
             </span>
           </div>
@@ -1175,11 +1175,11 @@ export default function GamePage() {
             return (
               <div
                 key={step}
-                className={`py-2 px-1 rounded-xl border text-center transition flex flex-col items-center justify-center ${isCurrent
-                    ? "bg-rose-600 text-white border-rose-400 font-black shadow-lg shadow-rose-600/30 scale-105"
-                    : isPassed
-                      ? "bg-zinc-950 text-zinc-500 border-zinc-900 line-through opacity-60"
-                      : "bg-zinc-950/60 text-zinc-600 border-zinc-900"
+                className={`py-2 px-1 rounded-xl border text-center transition-all flex flex-col items-center justify-center ${isCurrent
+                  ? "bg-emerald-500 text-slate-950 border-emerald-300 font-black shadow-lg shadow-emerald-500/30 scale-105"
+                  : isPassed
+                    ? "bg-zinc-950/80 text-zinc-500 border-zinc-900 line-through opacity-60"
+                    : "bg-zinc-950/60 text-zinc-600 border-zinc-900"
                   }`}
               >
                 <span className="text-[9px] sm:text-[10px] font-mono font-bold uppercase">
@@ -1191,24 +1191,24 @@ export default function GamePage() {
           })}
         </div>
 
-        {/* TV-Show Central High-Contrast White Banner for the Active Comment */}
-        <div className="bg-white text-slate-950 p-5 sm:p-8 md:p-9 rounded-2xl sm:rounded-3xl shadow-2xl border-4 border-rose-500 text-center relative overflow-hidden">
+        {/* TV-Show Central Frosted Glass Dark Banner for the Active Comment */}
+        <div className="bg-zinc-900/90 backdrop-blur-md p-5 sm:p-8 md:p-9 rounded-2xl sm:rounded-3xl shadow-2xl border-2 border-emerald-500/60 shadow-[0_0_30px_rgba(16,185,129,0.2)] text-center relative overflow-hidden transition-all duration-300 ease-out">
           <div className="flex items-center justify-center gap-2 mb-1.5">
-            <span className="px-2.5 py-0.5 rounded-full bg-rose-600 text-white text-[9px] sm:text-[10px] font-black uppercase tracking-widest">
+            <span className="px-2.5 py-0.5 rounded-full bg-emerald-500 text-slate-950 text-[9px] sm:text-[10px] font-black uppercase tracking-widest">
               КОМЕНТАР #{commentsRevealedCount}
             </span>
-            <span className="text-[9px] sm:text-[10px] font-bold text-zinc-500 uppercase">
+            <span className="text-[9px] sm:text-[10px] font-bold text-emerald-400/80 uppercase">
               (Вартість: +{currentRewardPoints} б.)
             </span>
           </div>
-          <h3 className="text-base sm:text-xl md:text-2xl font-black leading-snug uppercase tracking-tight text-slate-950 mt-1">
+          <h3 className="text-base sm:text-xl md:text-2xl font-bold leading-relaxed uppercase tracking-tight text-zinc-100 mt-2">
             "{currentCommentText}"
           </h3>
         </div>
 
         {/* Previous Comments Log if any */}
         {commentsRevealedCount > 1 && (
-          <div className="p-3 bg-zinc-950/80 border border-zinc-900 rounded-2xl space-y-1.5 animate-fadeIn">
+          <div className="p-3 bg-zinc-950/80 border border-zinc-850 rounded-2xl space-y-1.5 animate-fadeIn backdrop-blur-sm">
             <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-wider block">
               Попередні відкриті коментарі:
             </span>
@@ -1242,8 +1242,8 @@ export default function GamePage() {
                   <div
                     key={optIdx}
                     className={`p-3.5 sm:p-5 min-h-[50px] sm:min-h-[60px] rounded-2xl border-2 text-left flex items-center justify-between transition ${isCorrect
-                        ? "bg-emerald-600 text-white border-emerald-300 font-black shadow-xl shadow-emerald-600/30 scale-[1.02]"
-                        : "bg-zinc-950/40 border-zinc-900 text-zinc-600 opacity-40"
+                      ? "bg-emerald-600 text-white border-emerald-300 font-black shadow-xl shadow-emerald-600/30 scale-[1.02]"
+                      : "bg-zinc-950/40 border-zinc-900 text-zinc-600 opacity-40"
                       }`}
                   >
                     <div className="flex items-center gap-3 min-w-0">
@@ -1305,13 +1305,13 @@ export default function GamePage() {
                       }
                     }
                   }}
-                  className="p-3.5 sm:p-5 min-h-[52px] sm:min-h-[64px] rounded-2xl bg-gradient-to-br from-amber-400 via-amber-500 to-orange-500 hover:from-amber-300 hover:via-amber-400 hover:to-orange-400 active:scale-95 text-slate-950 border-2 border-amber-300 hover:border-white shadow-xl flex items-center justify-between cursor-pointer hover:scale-[1.02] transition duration-200"
+                  className="p-3.5 sm:p-5 min-h-[52px] sm:min-h-[64px] rounded-2xl bg-zinc-900/90 hover:bg-zinc-800/90 text-zinc-100 border border-zinc-700/80 hover:border-emerald-400 hover:shadow-[0_0_20px_rgba(16,185,129,0.2)] active:scale-95 shadow-xl flex items-center justify-between cursor-pointer transition-all duration-150"
                 >
                   <div className="flex items-center gap-3 min-w-0">
-                    <span className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-slate-950 text-amber-400 flex items-center justify-center font-mono font-black text-xs sm:text-sm shadow-inner flex-shrink-0">
+                    <span className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-slate-950 text-emerald-400 border border-emerald-500/30 flex items-center justify-center font-mono font-black text-xs sm:text-sm shadow-inner flex-shrink-0">
                       {letter}
                     </span>
-                    <span className="text-xs sm:text-base font-black leading-tight uppercase tracking-tight text-slate-950 drop-shadow-sm text-left line-clamp-2">
+                    <span className="text-xs sm:text-base font-bold leading-tight uppercase tracking-tight text-zinc-100 text-left line-clamp-2">
                       {opt}
                     </span>
                   </div>
@@ -1319,7 +1319,7 @@ export default function GamePage() {
                   {/* Host-only subtle hint marker */}
                   {isCorrect && (
                     <span
-                      className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-emerald-700 border-2 border-emerald-400 flex-shrink-0 ml-2"
+                      className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-emerald-500 border-2 border-emerald-300 shadow-[0_0_8px_rgba(16,185,129,0.8)] flex-shrink-0 ml-2"
                       title="Правильна відповідь"
                     />
                   )}
@@ -1334,8 +1334,8 @@ export default function GamePage() {
           <div className="flex flex-col items-center gap-3 w-full animate-fadeIn mt-2">
             <div
               className={`p-3.5 sm:p-4 rounded-2xl border text-xs sm:text-sm font-black text-center w-full shadow-lg ${commentsPointsEarned! > 0
-                  ? "bg-emerald-950/40 border-emerald-500/40 text-emerald-300"
-                  : "bg-rose-950/40 border-rose-500/40 text-rose-300"
+                ? "bg-emerald-950/40 border-emerald-500/40 text-emerald-300"
+                : "bg-rose-950/40 border-rose-500/40 text-rose-300"
                 }`}
             >
               {commentsPointsEarned! > 0 ? (
@@ -1359,7 +1359,7 @@ export default function GamePage() {
                 setCommentsPointsEarned(null);
                 playBeep(600, 0.1, "sine");
               }}
-              className="w-full py-3.5 sm:py-4 min-h-[48px] sm:min-h-[52px] bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-500 hover:to-pink-500 active:scale-[0.98] text-white rounded-2xl font-black text-xs sm:text-sm uppercase tracking-wider transition cursor-pointer shadow-xl shadow-rose-600/20 flex items-center justify-center gap-2"
+              className="w-full py-3.5 sm:py-4 min-h-[48px] sm:min-h-[52px] bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 active:scale-95 text-white rounded-2xl font-black text-xs sm:text-sm uppercase tracking-wider transition-all duration-150 cursor-pointer shadow-xl shadow-emerald-600/20 flex items-center justify-center gap-2"
             >
               <span>
                 {commentsGameIndex + 1 < 4
@@ -1397,18 +1397,18 @@ export default function GamePage() {
     if (isRoundFinished) {
       return (
         <div className="flex flex-col items-center justify-center gap-6 py-6 sm:py-8 animate-fadeIn w-full text-center px-2">
-          <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-amber-500 flex items-center justify-center text-slate-950 shadow-xl shadow-amber-500/20 mb-2 font-black text-2xl">
+          <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-indigo-600 flex items-center justify-center text-white shadow-xl shadow-indigo-600/20 mb-2 font-black text-2xl">
             🏆
           </div>
           <div>
-            <span className="px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-bold uppercase tracking-wider">
+            <span className="px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/30 text-indigo-400 text-xs font-bold uppercase tracking-wider">
               Раунд 3 Завершено!
             </span>
             <h2 className="text-2xl sm:text-3xl font-black text-white mt-3">Усі 8 питань 5/10 зіграно</h2>
           </div>
           <button
             onClick={nextRound}
-            className="w-full sm:w-auto px-6 py-3.5 min-h-[48px] rounded-xl bg-amber-500 hover:bg-amber-400 active:scale-95 text-slate-950 font-extrabold text-xs sm:text-sm transition cursor-pointer shadow-lg shadow-amber-500/20 flex items-center justify-center gap-1.5 uppercase tracking-wider"
+            className="w-full sm:w-auto px-6 py-3.5 min-h-[48px] rounded-xl bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white font-extrabold text-xs sm:text-sm transition cursor-pointer shadow-lg shadow-indigo-600/20 flex items-center justify-center gap-1.5 uppercase tracking-wider"
           >
             Раунд 4: Еліас <ChevronRight size={16} />
           </button>
@@ -1442,11 +1442,11 @@ export default function GamePage() {
 
     return (
       <div className="flex flex-col gap-4 sm:gap-6 w-full animate-fadeIn max-w-2xl mx-auto px-1">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-zinc-950 p-3.5 sm:p-4 rounded-2xl border border-zinc-800/80 shadow-lg">
+        {/* Header with Electric Indigo Neon Theme */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-zinc-900/80 backdrop-blur-md p-3.5 sm:p-4 rounded-2xl border border-indigo-500/50 shadow-[0_0_30px_rgba(99,102,241,0.15)]">
           <div>
             <div className="flex items-center gap-2">
-              <span className="px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 text-[10px] sm:text-xs font-bold uppercase tracking-wider flex items-center gap-1.5">
+              <span className="px-2.5 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/30 text-indigo-400 text-[10px] sm:text-xs font-bold uppercase tracking-wider flex items-center gap-1.5">
                 <Zap size={13} />
                 Раунд 3: 5/10 (Питання {blitzQuestionIndex + 1}/8)
               </span>
@@ -1456,34 +1456,40 @@ export default function GamePage() {
             </div>
             <h3 className="text-sm sm:text-lg font-black text-white mt-1.5">
               Питання #{blitzQuestionIndex + 1}: Відповідає{" "}
-              <strong className="text-amber-400 underline decoration-amber-400/50">{playerName}</strong>{" "}
+              <strong className="text-indigo-400 underline decoration-indigo-400/50">{playerName}</strong>{" "}
               ({gameSettings[activeTeam].name})
             </h3>
           </div>
         </div>
 
-        {/* 10-Second Countdown Timer */}
-        <div className="bg-zinc-950 border border-zinc-800 rounded-3xl p-4 sm:p-5 flex flex-col items-center justify-center relative shadow-2xl">
-          <span className="text-[9px] sm:text-[10px] font-bold text-zinc-500 uppercase tracking-widest block mb-1">
+        {/* 10-Second Countdown Dramatic TV Timer */}
+        <div className="bg-zinc-950/90 backdrop-blur-md border border-indigo-500/40 rounded-3xl p-4 sm:p-5 flex flex-col items-center justify-center relative shadow-[0_0_25px_rgba(99,102,241,0.15)]">
+          <span className="text-[9px] sm:text-[10px] font-bold text-zinc-400 uppercase tracking-widest block mb-1">
             Таймер на відповідь (10 с)
           </span>
 
           <div
-            className={`text-5xl sm:text-7xl font-black font-mono tracking-tight my-1 sm:my-2 transition duration-300 ${blitz10TimeLeft === 0
-                ? "text-red-500 scale-105 drop-shadow-[0_0_12px_rgba(239,68,68,0.6)]"
-                : blitz10TimeLeft <= 3
-                  ? "text-amber-400 animate-pulse"
-                  : "text-white"
+            className={`text-5xl sm:text-7xl font-black font-mono tracking-tight my-1 sm:my-2 transition-all duration-200 ${blitz10TimeLeft === 0
+              ? "text-red-500 scale-105 drop-shadow-[0_0_16px_rgba(239,68,68,1)]"
+              : blitz10TimeLeft <= 3
+                ? "text-red-500 animate-pulse drop-shadow-[0_0_12px_rgba(239,68,68,0.8)]"
+                : "text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.2)]"
               }`}
           >
             00:{blitz10TimeLeft.toString().padStart(2, "0")}
           </div>
 
+          {blitz10TimeLeft === 0 && (
+            <div className="px-3 sm:px-4 py-1.5 sm:py-2 bg-red-950/40 border border-red-500/50 rounded-xl text-red-400 text-[10px] sm:text-xs font-black uppercase tracking-wider animate-bounce mt-1 flex items-center gap-2 text-center">
+              <Flame size={16} /> ЧАС ВИЙШОВ! <Flame size={16} />
+            </div>
+          )}
+
           <div className="flex items-center gap-2.5 sm:gap-3 mt-2">
             {!blitz10TimerActive ? (
               <button
                 onClick={startBlitz10Timer}
-                className="px-5 sm:px-6 py-2.5 min-h-[44px] rounded-xl bg-amber-500 hover:bg-amber-400 active:scale-95 text-slate-950 font-extrabold text-xs sm:text-sm transition flex items-center gap-2 cursor-pointer shadow-lg shadow-amber-500/20"
+                className="px-5 sm:px-6 py-2.5 min-h-[44px] rounded-xl bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white font-extrabold text-xs sm:text-sm transition flex items-center gap-2 cursor-pointer shadow-lg shadow-indigo-600/20 border border-indigo-400/30"
               >
                 <Play size={14} className="fill-current" />
                 {blitz10TimeLeft === 10 ? "Запустити 10 с" : "Продовжити"}
@@ -1498,7 +1504,7 @@ export default function GamePage() {
             )}
             <button
               onClick={resetBlitz10Timer}
-              className="p-2.5 min-h-[44px] min-w-[44px] rounded-xl bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-white border border-zinc-800 cursor-pointer flex items-center justify-center"
+              className="p-2.5 min-h-[44px] min-w-[44px] rounded-xl bg-zinc-900 hover:bg-zinc-800 active:scale-95 text-zinc-400 hover:text-white border border-zinc-800 cursor-pointer flex items-center justify-center"
               title="Скинути таймер"
             >
               <RotateCcw size={14} />
@@ -1506,12 +1512,12 @@ export default function GamePage() {
           </div>
         </div>
 
-        {/* Question Card */}
-        <div className="bg-zinc-900 border border-zinc-800 p-4 sm:p-6 rounded-2xl text-center shadow-lg">
-          <span className="text-[9px] sm:text-[10px] font-bold text-amber-400 uppercase tracking-widest block mb-1.5">
+        {/* Question Card in Frosted Glass Container */}
+        <div className="bg-zinc-900/90 backdrop-blur-md border border-indigo-500/40 shadow-[0_0_20px_rgba(99,102,241,0.15)] p-5 sm:p-8 rounded-2xl sm:rounded-3xl text-center transition-all duration-300 ease-out">
+          <span className="text-[9px] sm:text-[10px] font-bold text-indigo-400 uppercase tracking-widest block mb-1.5">
             Запитання для ведучого
           </span>
-          <h3 className="text-base sm:text-xl font-bold text-white leading-relaxed">
+          <h3 className="text-lg sm:text-2xl font-bold text-zinc-100 leading-relaxed">
             {currentQuestionText}
           </h3>
         </div>
@@ -1529,9 +1535,9 @@ export default function GamePage() {
                 playChime();
                 confetti({ particleCount: 30, spread: 50, origin: { y: 0.8 } });
               }}
-              className={`p-3.5 sm:p-4 min-h-[48px] sm:min-h-[52px] rounded-xl font-black text-xs sm:text-sm transition flex items-center justify-center gap-2 cursor-pointer border active:scale-95 ${blitzScores[blitzQuestionIndex] === true
-                  ? "bg-emerald-600 text-white border-emerald-400 shadow-lg shadow-emerald-600/20"
-                  : "bg-emerald-950/20 hover:bg-emerald-950/40 text-emerald-400 border-emerald-500/30"
+              className={`p-3.5 sm:p-4 min-h-[48px] sm:min-h-[52px] rounded-xl font-black text-xs sm:text-sm transition-all duration-150 flex items-center justify-center gap-2 cursor-pointer border active:scale-95 ${blitzScores[blitzQuestionIndex] === true
+                ? "bg-emerald-600 text-white border-emerald-400 shadow-lg shadow-emerald-600/30 scale-[1.02]"
+                : "bg-emerald-950/30 hover:bg-emerald-900/40 text-emerald-400 border-emerald-500/40 hover:shadow-[0_0_15px_rgba(16,185,129,0.2)]"
                 }`}
             >
               <CheckCircle2 size={18} /> +1 Зарахувати
@@ -1542,9 +1548,9 @@ export default function GamePage() {
                 setBlitzScores((prev) => ({ ...prev, [blitzQuestionIndex]: false }));
                 playBuzzer();
               }}
-              className={`p-3.5 sm:p-4 min-h-[48px] sm:min-h-[52px] rounded-xl font-black text-xs sm:text-sm transition flex items-center justify-center gap-2 cursor-pointer border active:scale-95 ${blitzScores[blitzQuestionIndex] === false
-                  ? "bg-rose-600 text-white border-rose-400 shadow-lg shadow-rose-600/20"
-                  : "bg-rose-950/20 hover:bg-rose-950/40 text-rose-400 border-rose-500/30"
+              className={`p-3.5 sm:p-4 min-h-[48px] sm:min-h-[52px] rounded-xl font-black text-xs sm:text-sm transition-all duration-150 flex items-center justify-center gap-2 cursor-pointer border active:scale-95 ${blitzScores[blitzQuestionIndex] === false
+                ? "bg-rose-600 text-white border-rose-400 shadow-lg shadow-rose-600/30 scale-[1.02]"
+                : "bg-rose-950/30 hover:bg-rose-900/40 text-rose-400 border-rose-500/40 hover:shadow-[0_0_15px_rgba(244,63,94,0.2)]"
                 }`}
             >
               <XCircle size={18} /> 0 Незалік
@@ -1557,7 +1563,7 @@ export default function GamePage() {
                 setBlitzQuestionIndex((prev) => prev + 1);
                 resetBlitz10Timer();
               }}
-              className="w-full py-3.5 min-h-[48px] bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white rounded-xl font-extrabold text-xs sm:text-sm uppercase tracking-wider transition cursor-pointer flex items-center justify-center gap-1.5 shadow-lg shadow-indigo-600/20"
+              className="w-full py-3.5 min-h-[48px] bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white rounded-xl font-extrabold text-xs sm:text-sm uppercase tracking-wider transition-all duration-150 cursor-pointer flex items-center justify-center gap-1.5 shadow-lg shadow-indigo-600/20"
             >
               <span>Наступне запитання ({blitzQuestionIndex + 2}/8)</span>
               <ChevronRight size={16} />
@@ -1586,11 +1592,11 @@ export default function GamePage() {
     if (isAllTurnsFinished) {
       return (
         <div className="flex flex-col items-center justify-center gap-6 py-6 sm:py-8 animate-fadeIn w-full text-center px-2">
-          <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-tr from-purple-500 to-indigo-600 flex items-center justify-center text-white shadow-xl shadow-purple-500/20 mb-2">
+          <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-tr from-rose-500 to-pink-600 flex items-center justify-center text-white shadow-xl shadow-rose-500/20 mb-2">
             <Trophy size={30} />
           </div>
           <div>
-            <span className="px-3 py-1 rounded-full bg-purple-500/10 border border-purple-500/30 text-purple-300 text-xs font-bold uppercase tracking-wider">
+            <span className="px-3 py-1 rounded-full bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs font-bold uppercase tracking-wider">
               Раунд 4: Еліас завершено!
             </span>
             <h2 className="text-2xl sm:text-3xl font-black text-white mt-3">Усі 8 ходів зіграно!</h2>
@@ -1600,7 +1606,7 @@ export default function GamePage() {
               setGameState("finished");
               confetti({ particleCount: 150, spread: 100, origin: { y: 0.5 } });
             }}
-            className="w-full sm:w-auto px-8 py-4 min-h-[50px] rounded-xl bg-purple-600 hover:bg-purple-500 active:scale-95 text-white font-extrabold text-xs sm:text-sm transition cursor-pointer shadow-lg shadow-purple-600/30 uppercase tracking-wider"
+            className="w-full sm:w-auto px-8 py-4 min-h-[50px] rounded-xl bg-rose-600 hover:bg-rose-500 active:scale-95 text-white font-extrabold text-xs sm:text-sm transition cursor-pointer shadow-lg shadow-rose-600/30 uppercase tracking-wider"
           >
             Фінальний підсумок гри 🎉
           </button>
@@ -1610,11 +1616,11 @@ export default function GamePage() {
 
     return (
       <div className="flex flex-col gap-4 sm:gap-6 w-full animate-fadeIn max-w-2xl mx-auto px-1">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-zinc-950 p-3.5 sm:p-4 rounded-2xl border border-zinc-800/80 shadow-lg">
+        {/* Header with Neon Rose Theme */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-zinc-900/80 backdrop-blur-md p-3.5 sm:p-4 rounded-2xl border border-rose-500/50 shadow-[0_0_30px_rgba(244,63,94,0.15)]">
           <div>
             <div className="flex items-center gap-2">
-              <span className="px-2.5 py-1 rounded-full bg-purple-500/10 border border-purple-500/30 text-purple-400 text-[10px] sm:text-xs font-bold uppercase tracking-wider flex items-center gap-1.5">
+              <span className="px-2.5 py-1 rounded-full bg-rose-500/10 border border-rose-500/30 text-rose-400 text-[10px] sm:text-xs font-bold uppercase tracking-wider flex items-center gap-1.5">
                 <MessageSquareQuote size={13} />
                 Раунд 4: Еліас (Паперові картки)
               </span>
@@ -1636,7 +1642,7 @@ export default function GamePage() {
         </div>
 
         {/* Active Pair Banner */}
-        <div className={`p-3.5 sm:p-4 rounded-2xl border transition flex items-center justify-between gap-3 shadow-lg ${turnInfo.activeTeam === "team1" ? "bg-indigo-950/30 border-indigo-500/40" : "bg-rose-950/30 border-rose-500/40"}`}>
+        <div className={`p-3.5 sm:p-4 rounded-2xl border backdrop-blur-md transition flex items-center justify-between gap-3 shadow-lg ${turnInfo.activeTeam === "team1" ? "bg-indigo-950/30 border-indigo-500/40 shadow-[0_0_20px_rgba(99,102,241,0.15)]" : "bg-rose-950/30 border-rose-500/40 shadow-[0_0_20px_rgba(244,63,94,0.15)]"}`}>
           <div className="flex items-center gap-3 min-w-0">
             <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center font-black text-white flex-shrink-0 ${turnInfo.activeTeam === "team1" ? "bg-indigo-600" : "bg-rose-600"}`}>
               {turnInfo.turnNumber}
@@ -1652,18 +1658,18 @@ export default function GamePage() {
           </div>
         </div>
 
-        {/* 71-Second (01:11) Timer */}
-        <div className="bg-zinc-950 border border-zinc-800 rounded-3xl p-4 sm:p-5 flex flex-col items-center justify-center shadow-2xl relative">
-          <span className="text-[9px] sm:text-[10px] font-bold text-zinc-500 uppercase tracking-widest block mb-1">
+        {/* 71-Second (01:11) Dramatic TV Timer */}
+        <div className="bg-zinc-950/90 backdrop-blur-md border border-rose-500/40 rounded-3xl p-4 sm:p-5 flex flex-col items-center justify-center shadow-[0_0_25px_rgba(244,63,94,0.15)] relative">
+          <span className="text-[9px] sm:text-[10px] font-bold text-zinc-400 uppercase tracking-widest block mb-1">
             Таймер на раунд (01:11 • 71 с)
           </span>
 
           <div
-            className={`text-5xl sm:text-7xl font-black font-mono tracking-tight my-1 sm:my-2 transition duration-300 ${aliasTimeLeft === 0
-                ? "text-red-500 scale-105 drop-shadow-[0_0_12px_rgba(239,68,68,0.6)]"
-                : aliasTimeLeft <= 15
-                  ? "text-amber-400 animate-pulse"
-                  : "text-white"
+            className={`text-5xl sm:text-7xl font-black font-mono tracking-tight my-1 sm:my-2 transition-all duration-200 ${aliasTimeLeft === 0
+              ? "text-red-500 scale-105 drop-shadow-[0_0_16px_rgba(239,68,68,1)]"
+              : aliasTimeLeft <= 15
+                ? "text-red-500 animate-pulse drop-shadow-[0_0_12px_rgba(239,68,68,0.8)]"
+                : "text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.2)]"
               }`}
           >
             {formatTime(aliasTimeLeft)}
@@ -1679,7 +1685,7 @@ export default function GamePage() {
             {!aliasTimerActive ? (
               <button
                 onClick={startAliasTimer}
-                className="px-5 sm:px-6 py-2.5 min-h-[44px] rounded-xl bg-purple-600 hover:bg-purple-500 active:scale-95 text-white font-extrabold text-xs sm:text-sm transition flex items-center gap-2 cursor-pointer shadow-lg shadow-purple-600/20 uppercase"
+                className="px-5 sm:px-6 py-2.5 min-h-[44px] rounded-xl bg-rose-600 hover:bg-rose-500 active:scale-95 text-white font-extrabold text-xs sm:text-sm transition flex items-center gap-2 cursor-pointer shadow-lg shadow-rose-600/30 uppercase border border-rose-400/30"
               >
                 <Play size={14} className="fill-current" />
                 {aliasTimeLeft === 71 ? "▶ Почати (01:11)" : "Продовжити"}
@@ -1695,7 +1701,7 @@ export default function GamePage() {
 
             <button
               onClick={resetAliasTimer}
-              className="p-2.5 min-h-[44px] min-w-[44px] rounded-xl bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-white border border-zinc-800 cursor-pointer flex items-center justify-center"
+              className="p-2.5 min-h-[44px] min-w-[44px] rounded-xl bg-zinc-900 hover:bg-zinc-800 active:scale-95 text-zinc-400 hover:text-white border border-zinc-800 cursor-pointer flex items-center justify-center"
               title="Скинути на 01:11 (71 с)"
             >
               <RotateCcw size={14} />
@@ -1704,33 +1710,33 @@ export default function GamePage() {
         </div>
 
         {/* Live Score Tally Box */}
-        <div className="p-3 sm:p-4 bg-zinc-900 border border-zinc-800 rounded-2xl text-center shadow-lg">
+        <div className="p-3 sm:p-4 bg-zinc-900/80 backdrop-blur-md border border-zinc-800/80 rounded-2xl text-center shadow-lg">
           <div className="flex items-center justify-around text-xs font-bold">
             <div>
-              <span className="text-[9px] sm:text-[10px] text-zinc-500 uppercase block">Вгадано (+1)</span>
+              <span className="text-[9px] sm:text-[10px] text-zinc-400 uppercase block">Вгадано (+1)</span>
               <span className="text-xl sm:text-2xl font-black text-emerald-400">+{aliasGuessedCount}</span>
             </div>
             <div className="h-7 sm:h-8 w-px bg-zinc-800"></div>
             <div>
-              <span className="text-[9px] sm:text-[10px] text-zinc-500 uppercase block">Штрафів (-1)</span>
+              <span className="text-[9px] sm:text-[10px] text-zinc-400 uppercase block">Штрафів (-1)</span>
               <span className="text-xl sm:text-2xl font-black text-rose-400">-{aliasSkippedCount}</span>
             </div>
             <div className="h-7 sm:h-8 w-px bg-zinc-800"></div>
             <div>
-              <span className="text-[9px] sm:text-[10px] text-zinc-500 uppercase block">За хід</span>
-              <span className="text-xl sm:text-2xl font-black text-purple-400 font-mono">{currentTurnPoints} б.</span>
+              <span className="text-[9px] sm:text-[10px] text-zinc-400 uppercase block">За хід</span>
+              <span className="text-xl sm:text-2xl font-black text-rose-400 font-mono">{currentTurnPoints} б.</span>
             </div>
           </div>
         </div>
 
-        {/* Big Host Scoring Buttons */}
+        {/* Big Host Scoring Buttons with Tactile Feedback */}
         <div className="grid grid-cols-1 xs:grid-cols-2 gap-3 sm:gap-4 w-full">
           <button
             onClick={() => {
               setAliasGuessedCount((prev) => prev + 1);
               playBeep(880, 0.1, "sine");
             }}
-            className="h-16 sm:h-20 bg-emerald-600 hover:bg-emerald-500 active:scale-[0.98] text-white rounded-2xl font-black text-base sm:text-xl transition flex items-center justify-center gap-2 cursor-pointer shadow-xl shadow-emerald-600/20 border border-emerald-400/30"
+            className="h-16 sm:h-20 bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white rounded-2xl font-black text-base sm:text-xl transition-all duration-100 flex items-center justify-center gap-2 cursor-pointer shadow-xl shadow-emerald-600/30 border border-emerald-400/40 hover:shadow-[0_0_20px_rgba(16,185,129,0.4)]"
           >
             <CheckCircle2 size={22} />
             <span>+1 ВГАДАНО</span>
@@ -1741,7 +1747,7 @@ export default function GamePage() {
               setAliasSkippedCount((prev) => prev + 1);
               playBeep(200, 0.15, "sawtooth");
             }}
-            className="h-16 sm:h-20 bg-rose-600 hover:bg-rose-500 active:scale-[0.98] text-white rounded-2xl font-black text-base sm:text-xl transition flex items-center justify-center gap-2 cursor-pointer shadow-xl shadow-rose-600/20 border border-rose-400/30"
+            className="h-16 sm:h-20 bg-rose-600 hover:bg-rose-500 active:scale-95 text-white rounded-2xl font-black text-base sm:text-xl transition-all duration-100 flex items-center justify-center gap-2 cursor-pointer shadow-xl shadow-rose-600/30 border border-rose-400/40 hover:shadow-[0_0_20px_rgba(244,63,94,0.4)]"
           >
             <XCircle size={22} />
             <span>-1 ПРОПУСК</span>
@@ -1775,7 +1781,7 @@ export default function GamePage() {
             setAliasTurnIndex((prev) => prev + 1);
             playChime();
           }}
-          className="w-full py-3.5 sm:py-4 min-h-[50px] bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 hover:opacity-95 active:scale-[0.98] text-white rounded-2xl font-black text-xs sm:text-sm uppercase tracking-wider transition cursor-pointer shadow-xl shadow-indigo-600/20 flex items-center justify-center gap-2"
+          className="w-full py-3.5 sm:py-4 min-h-[50px] bg-gradient-to-r from-rose-600 via-pink-600 to-rose-600 hover:opacity-95 active:scale-95 text-white rounded-2xl font-black text-xs sm:text-sm uppercase tracking-wider transition-all duration-150 cursor-pointer shadow-xl shadow-rose-600/30 flex items-center justify-center gap-2"
         >
           <ArrowRightCircle size={18} />
           <span>Завершити хід та передати іншій команді</span>
@@ -1783,23 +1789,23 @@ export default function GamePage() {
 
         {/* Turn Summary Modal */}
         {aliasTurnSummaryModal && (
-          <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-fadeIn">
-            <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-5 sm:p-6 max-w-md w-full text-center shadow-2xl space-y-4">
-              <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest block">Хід завершено</span>
+          <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 animate-fadeIn">
+            <div className="bg-zinc-900/95 backdrop-blur-md border border-rose-500/40 rounded-3xl p-5 sm:p-6 max-w-md w-full text-center shadow-2xl space-y-4">
+              <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest block">Хід завершено</span>
               <h3 className="text-lg sm:text-xl font-black text-white">{aliasTurnSummaryModal.teamName}</h3>
 
               <div className="p-3 sm:p-4 bg-zinc-950 rounded-2xl border border-zinc-800 flex justify-around">
                 <div>
-                  <span className="text-[9px] text-zinc-500 uppercase block">Вгадано</span>
+                  <span className="text-[9px] text-zinc-400 uppercase block">Вгадано</span>
                   <span className="text-lg sm:text-xl font-black text-emerald-400">+{aliasTurnSummaryModal.guessed}</span>
                 </div>
                 <div>
-                  <span className="text-[9px] text-zinc-500 uppercase block">Штрафів</span>
+                  <span className="text-[9px] text-zinc-400 uppercase block">Штрафів</span>
                   <span className="text-lg sm:text-xl font-black text-rose-400">-{aliasTurnSummaryModal.skipped}</span>
                 </div>
                 <div>
-                  <span className="text-[9px] text-zinc-500 uppercase block">Нараховано</span>
-                  <span className="text-lg sm:text-xl font-black text-purple-400">{aliasTurnSummaryModal.points} б.</span>
+                  <span className="text-[9px] text-zinc-400 uppercase block">Нараховано</span>
+                  <span className="text-lg sm:text-xl font-black text-rose-400 font-mono">{aliasTurnSummaryModal.points} б.</span>
                 </div>
               </div>
 
@@ -1812,7 +1818,7 @@ export default function GamePage() {
 
               <button
                 onClick={() => setAliasTurnSummaryModal(null)}
-                className="w-full py-3 min-h-[46px] bg-purple-600 hover:bg-purple-500 active:scale-95 text-white font-bold text-xs sm:text-sm rounded-xl uppercase tracking-wider transition cursor-pointer"
+                className="w-full py-3 min-h-[46px] bg-rose-600 hover:bg-rose-500 active:scale-95 text-white font-bold text-xs sm:text-sm rounded-xl uppercase tracking-wider transition cursor-pointer shadow-lg shadow-rose-600/30"
               >
                 Готові до наступного ходу!
               </button>
@@ -2054,8 +2060,8 @@ export default function GamePage() {
                   type="button"
                   onClick={() => setGameSettings((s) => ({ ...s, first_turn_team: 1 }))}
                   className={`py-2.5 sm:py-3 px-3 min-h-[44px] rounded-xl border text-xs font-bold transition flex items-center justify-center gap-2 cursor-pointer active:scale-95 ${gameSettings.first_turn_team === 1
-                      ? "bg-indigo-600 text-white border-indigo-400 shadow-lg shadow-indigo-600/30"
-                      : "bg-zinc-900 text-zinc-400 border-zinc-800"
+                    ? "bg-indigo-600 text-white border-indigo-400 shadow-lg shadow-indigo-600/30"
+                    : "bg-zinc-900 text-zinc-400 border-zinc-800"
                     }`}
                 >
                   <UserCheck size={14} />
@@ -2066,8 +2072,8 @@ export default function GamePage() {
                   type="button"
                   onClick={() => setGameSettings((s) => ({ ...s, first_turn_team: 2 }))}
                   className={`py-2.5 sm:py-3 px-3 min-h-[44px] rounded-xl border text-xs font-bold transition flex items-center justify-center gap-2 cursor-pointer active:scale-95 ${gameSettings.first_turn_team === 2
-                      ? "bg-rose-600 text-white border-rose-400 shadow-lg shadow-rose-600/30"
-                      : "bg-zinc-900 text-zinc-400 border-zinc-800"
+                    ? "bg-rose-600 text-white border-rose-400 shadow-lg shadow-rose-600/30"
+                    : "bg-zinc-900 text-zinc-400 border-zinc-800"
                     }`}
                 >
                   <UserCheck size={14} />
@@ -2135,8 +2141,8 @@ export default function GamePage() {
                       key={g.id}
                       onClick={() => handleSelectGame(g)}
                       className={`p-3 sm:p-3.5 min-h-[48px] rounded-2xl border text-left flex items-center justify-between transition cursor-pointer active:scale-95 ${selectedGameId === g.id
-                          ? "bg-indigo-950/40 border-indigo-500 text-white shadow-md shadow-indigo-950/30"
-                          : "bg-zinc-950/60 border-zinc-800 hover:border-zinc-700 text-zinc-300"
+                        ? "bg-indigo-950/40 border-indigo-500 text-white shadow-md shadow-indigo-950/30"
+                        : "bg-zinc-950/60 border-zinc-800 hover:border-zinc-700 text-zinc-300"
                         }`}
                     >
                       <div className="truncate min-w-0 pr-2">
@@ -2262,8 +2268,8 @@ export default function GamePage() {
                     type="button"
                     onClick={() => setGameSettings((s) => ({ ...s, first_turn_team: 1 }))}
                     className={`py-2.5 sm:py-3 px-3 min-h-[44px] rounded-xl border text-xs sm:text-sm font-black transition flex items-center justify-center gap-2 cursor-pointer active:scale-95 ${gameSettings.first_turn_team === 1
-                        ? "bg-indigo-600 text-white border-indigo-400 shadow-lg shadow-indigo-600/30"
-                        : "bg-zinc-900 text-zinc-400 border-zinc-800"
+                      ? "bg-indigo-600 text-white border-indigo-400 shadow-lg shadow-indigo-600/30"
+                      : "bg-zinc-900 text-zinc-400 border-zinc-800"
                       }`}
                   >
                     <UserCheck size={14} />
@@ -2274,8 +2280,8 @@ export default function GamePage() {
                     type="button"
                     onClick={() => setGameSettings((s) => ({ ...s, first_turn_team: 2 }))}
                     className={`py-2.5 sm:py-3 px-3 min-h-[44px] rounded-xl border text-xs sm:text-sm font-black transition flex items-center justify-center gap-2 cursor-pointer active:scale-95 ${gameSettings.first_turn_team === 2
-                        ? "bg-rose-600 text-white border-rose-400 shadow-lg shadow-rose-600/30"
-                        : "bg-zinc-900 text-zinc-400 border-zinc-800"
+                      ? "bg-rose-600 text-white border-rose-400 shadow-lg shadow-rose-600/30"
+                      : "bg-zinc-900 text-zinc-400 border-zinc-800"
                       }`}
                   >
                     <UserCheck size={14} />
@@ -2304,10 +2310,21 @@ export default function GamePage() {
                 {rounds.map((r, idx) => {
                   const isActive = currentRoundIndex === idx;
                   let roundLabel = `Раунд ${idx + 1}`;
-                  if (r.type === "easy_hard" || r.type === "pidstava") roundLabel = "1. Підстава";
-                  else if (r.type === "youtube_comments" || r.type === "comments") roundLabel = "2. Коментарі";
-                  else if (r.type === "blitz_5sec" || r.type === "blitz_5_10") roundLabel = "3. 5/10";
-                  else if (r.type === "alias") roundLabel = "4. Еліас";
+                  let activeClass = "bg-amber-500 text-slate-950 shadow-md shadow-amber-500/30 font-black";
+
+                  if (r.type === "easy_hard" || r.type === "pidstava") {
+                    roundLabel = "1. Підстава";
+                    activeClass = "bg-amber-500 text-slate-950 shadow-md shadow-amber-500/30 font-black";
+                  } else if (r.type === "youtube_comments" || r.type === "comments") {
+                    roundLabel = "2. Коментарі";
+                    activeClass = "bg-emerald-500 text-slate-950 shadow-md shadow-emerald-500/30 font-black";
+                  } else if (r.type === "blitz_5sec" || r.type === "blitz_5_10") {
+                    roundLabel = "3. 5/10";
+                    activeClass = "bg-indigo-600 text-white shadow-md shadow-indigo-600/30 font-black";
+                  } else if (r.type === "alias") {
+                    roundLabel = "4. Еліас";
+                    activeClass = "bg-rose-600 text-white shadow-md shadow-rose-600/30 font-black";
+                  }
 
                   return (
                     <button
@@ -2316,7 +2333,7 @@ export default function GamePage() {
                         setCurrentRoundIndex(idx);
                         resetRoundStates();
                       }}
-                      className={`px-2.5 sm:px-3 py-1.5 min-h-[36px] sm:min-h-[40px] rounded-xl text-[10px] sm:text-xs font-black uppercase tracking-wider transition cursor-pointer whitespace-nowrap active:scale-95 ${isActive ? "bg-amber-500 text-slate-950 shadow-md shadow-amber-500/30" : "text-zinc-500 hover:text-zinc-300"
+                      className={`px-2.5 sm:px-3 py-1.5 min-h-[36px] sm:min-h-[40px] rounded-xl text-[10px] sm:text-xs font-black uppercase tracking-wider transition-all cursor-pointer whitespace-nowrap active:scale-95 ${isActive ? activeClass : "text-zinc-500 hover:text-zinc-300"
                         }`}
                     >
                       {roundLabel}
@@ -2337,8 +2354,8 @@ export default function GamePage() {
                 <button
                   onClick={nextRound}
                   className={`px-2.5 py-1.5 min-h-[36px] rounded-lg transition cursor-pointer flex items-center justify-center gap-1 active:scale-95 text-xs font-bold ${currentRoundIndex === rounds.length - 1
-                      ? "bg-amber-500 hover:bg-amber-400 text-slate-950 font-black shadow-md shadow-amber-500/20"
-                      : "bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-white"
+                    ? "bg-amber-500 hover:bg-amber-400 text-slate-950 font-black shadow-md shadow-amber-500/20"
+                    : "bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-white"
                     }`}
                   title={currentRoundIndex === rounds.length - 1 ? "Завершити гру та відкрити екран переможця" : "Наступний раунд"}
                 >
@@ -2424,19 +2441,19 @@ export default function GamePage() {
             {/* Victory Card Container with dynamic glowing backdrop */}
             <div
               className={`w-full p-5 sm:p-8 rounded-3xl border-2 shadow-2xl relative overflow-hidden backdrop-blur-xl transition-all duration-500 ${scores.team1 > scores.team2
-                  ? "bg-gradient-to-b from-indigo-950/80 via-zinc-900/90 to-zinc-950 border-indigo-500/50 shadow-indigo-950/50"
-                  : scores.team2 > scores.team1
-                    ? "bg-gradient-to-b from-rose-950/80 via-zinc-900/90 to-zinc-950 border-rose-500/50 shadow-rose-950/50"
-                    : "bg-gradient-to-b from-amber-950/80 via-zinc-900/90 to-zinc-950 border-amber-500/50 shadow-amber-950/50"
+                ? "bg-gradient-to-b from-indigo-950/80 via-zinc-900/90 to-zinc-950 border-indigo-500/50 shadow-indigo-950/50"
+                : scores.team2 > scores.team1
+                  ? "bg-gradient-to-b from-rose-950/80 via-zinc-900/90 to-zinc-950 border-rose-500/50 shadow-rose-950/50"
+                  : "bg-gradient-to-b from-amber-950/80 via-zinc-900/90 to-zinc-950 border-amber-500/50 shadow-amber-950/50"
                 }`}
             >
               {/* Background ambient glow effect */}
               <div
                 className={`absolute -top-20 left-1/2 -translate-x-1/2 w-64 h-64 rounded-full blur-3xl opacity-30 pointer-events-none ${scores.team1 > scores.team2
-                    ? "bg-indigo-500"
-                    : scores.team2 > scores.team1
-                      ? "bg-rose-500"
-                      : "bg-amber-500"
+                  ? "bg-indigo-500"
+                  : scores.team2 > scores.team1
+                    ? "bg-rose-500"
+                    : "bg-amber-500"
                   }`}
               />
 
@@ -2444,10 +2461,10 @@ export default function GamePage() {
               <div className="relative z-10 flex flex-col items-center">
                 <div
                   className={`w-20 h-20 sm:w-24 sm:h-24 rounded-3xl flex items-center justify-center text-4xl sm:text-5xl mb-3 shadow-2xl transition duration-300 transform hover:scale-105 ${scores.team1 > scores.team2
-                      ? "bg-gradient-to-tr from-amber-400 via-amber-500 to-indigo-500 text-slate-950 border-2 border-amber-300 shadow-amber-500/30 animate-pulse"
-                      : scores.team2 > scores.team1
-                        ? "bg-gradient-to-tr from-amber-400 via-amber-500 to-rose-500 text-slate-950 border-2 border-amber-300 shadow-amber-500/30 animate-pulse"
-                        : "bg-gradient-to-tr from-amber-300 via-amber-400 to-orange-500 text-slate-950 border-2 border-amber-200 shadow-amber-500/30 animate-pulse"
+                    ? "bg-gradient-to-tr from-amber-400 via-amber-500 to-indigo-500 text-slate-950 border-2 border-amber-300 shadow-amber-500/30 animate-pulse"
+                    : scores.team2 > scores.team1
+                      ? "bg-gradient-to-tr from-amber-400 via-amber-500 to-rose-500 text-slate-950 border-2 border-amber-300 shadow-amber-500/30 animate-pulse"
+                      : "bg-gradient-to-tr from-amber-300 via-amber-400 to-orange-500 text-slate-950 border-2 border-amber-200 shadow-amber-500/30 animate-pulse"
                     }`}
                 >
                   🏆
@@ -2512,10 +2529,10 @@ export default function GamePage() {
                 {/* Team 1 Score Card */}
                 <div
                   className={`p-4 sm:p-5 rounded-2xl border-2 transition relative flex flex-col justify-between ${scores.team1 > scores.team2
-                      ? "bg-indigo-950/60 border-indigo-400/80 shadow-lg shadow-indigo-950/50 scale-[1.02]"
-                      : scores.team1 === scores.team2
-                        ? "bg-zinc-950/70 border-amber-500/40"
-                        : "bg-zinc-950/40 border-zinc-800 opacity-60"
+                    ? "bg-indigo-950/60 border-indigo-400/80 shadow-lg shadow-indigo-950/50 scale-[1.02]"
+                    : scores.team1 === scores.team2
+                      ? "bg-zinc-950/70 border-amber-500/40"
+                      : "bg-zinc-950/40 border-zinc-800 opacity-60"
                     }`}
                 >
                   <div className="flex items-center justify-between gap-2">
@@ -2546,10 +2563,10 @@ export default function GamePage() {
                 {/* Team 2 Score Card */}
                 <div
                   className={`p-4 sm:p-5 rounded-2xl border-2 transition relative flex flex-col justify-between ${scores.team2 > scores.team1
-                      ? "bg-rose-950/60 border-rose-400/80 shadow-lg shadow-rose-950/50 scale-[1.02]"
-                      : scores.team1 === scores.team2
-                        ? "bg-zinc-950/70 border-amber-500/40"
-                        : "bg-zinc-950/40 border-zinc-800 opacity-60"
+                    ? "bg-rose-950/60 border-rose-400/80 shadow-lg shadow-rose-950/50 scale-[1.02]"
+                    : scores.team1 === scores.team2
+                      ? "bg-zinc-950/70 border-amber-500/40"
+                      : "bg-zinc-950/40 border-zinc-800 opacity-60"
                     }`}
                 >
                   <div className="flex items-center justify-between gap-2">
