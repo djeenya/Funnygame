@@ -244,8 +244,9 @@ export default function AdminPage() {
           if (draft.roundType) setRoundType(draft.roundType);
           if (typeof draft.activeCardTab === "number") setActiveCardTab(draft.activeCardTab);
           if (typeof draft.activeCommentTab === "number") setActiveCommentTab(draft.activeCommentTab);
-          if (Array.isArray(draft.easyHardCards) && draft.easyHardCards.length === 8) {
-            setEasyHardCards(draft.easyHardCards);
+          if (Array.isArray(draft.easyHardCards) && draft.easyHardCards.length > 0) {
+            const restoredCards = Array.from({ length: 8 }, (_, i) => draft.easyHardCards[i] || createEmptyCard(i));
+            setEasyHardCards(restoredCards);
           }
           if (Array.isArray(draft.commentGames) && draft.commentGames.length === 4) {
             setCommentGames(draft.commentGames);
@@ -385,7 +386,15 @@ export default function AdminPage() {
       const normalizedRounds: Round[] = (data || []).map((r: any) => ({
         ...r,
         ...(r.data || {}),
-        cards: r.cards || r.data?.cards || [],
+        cards:
+          r.cards ||
+          r.data?.cards ||
+          r.topics ||
+          r.data?.topics ||
+          r.themes ||
+          r.data?.themes ||
+          (r.type === "pidstava" || r.type === "easy_hard" ? r.questions || r.data?.questions : []) ||
+          [],
         comment_games: r.comment_games || r.data?.comment_games || r.data?.games || r.games || [],
         games: r.games || r.data?.games || r.data?.comment_games || r.comment_games || [],
         blitz_questions: r.blitz_questions || r.data?.blitz_questions || r.data?.questions || r.questions || [],
@@ -664,7 +673,11 @@ export default function AdminPage() {
         hard_answer: (c.hard_answer || c.correct_answer_hard || "").trim(),
         hard_fact: (c.hard_fact || "").trim(),
       }));
-      roundData = { cards: normalizedCards, question: "Підстава (8 тем)" };
+      roundData = {
+        cards: normalizedCards,
+        topics: normalizedCards,
+        question: "Підстава (8 тем)",
+      };
     } else if (roundType === "youtube_comments" || roundType === "comments") {
       for (let i = 0; i < 4; i++) {
         const g = commentGames[i];
@@ -700,32 +713,35 @@ export default function AdminPage() {
     if (round.type === "easy_hard" || round.type === "pidstava") {
       setRoundType("easy_hard");
       label = `Підстава (Раунд ${idx + 1})`;
-      const rawCards = round.cards || round.data?.cards || [];
-      if (rawCards.length > 0) {
+      const rawCards =
+        round.cards ||
+        round.data?.cards ||
+        round.topics ||
+        round.data?.topics ||
+        round.themes ||
+        round.data?.themes ||
+        (round.type === "pidstava" || round.type === "easy_hard" ? round.questions || round.data?.questions : []) ||
+        [];
+
+      if (Array.isArray(rawCards) && rawCards.length > 0) {
         const fullCards: PidstavaCard[] = Array.from({ length: 8 }).map((_, i) => {
-          const c = rawCards[i];
+          const c = (rawCards as any[])[i];
           if (!c) {
-            return {
-              topic: `Тема ${i + 1}`,
-              easy_question: "",
-              easy_answer: "",
-              easy_fact: "",
-              hard_question: "",
-              hard_answer: "",
-              hard_fact: "",
-            };
+            return createEmptyCard(i);
           }
           return {
-            topic: c.topic || "",
-            easy_question: c.easy_question || c.question_easy || "",
-            easy_answer: c.easy_answer || c.correct_answer_easy || "",
-            easy_fact: c.easy_fact || c.fact || "",
-            hard_question: c.hard_question || c.question_hard || "",
-            hard_answer: c.hard_answer || c.correct_answer_hard || "",
-            hard_fact: c.hard_fact || "",
+            topic: c.topic || c.title || c.name || c.theme || `Тема ${i + 1}`,
+            easy_question: c.easy_question || c.question_easy || c.easyQuestion || c.question || "",
+            easy_answer: c.easy_answer || c.correct_answer_easy || c.easyAnswer || c.answer_easy || c.answer || "",
+            easy_fact: c.easy_fact || c.fact_easy || c.easyFact || c.fact || "",
+            hard_question: c.hard_question || c.question_hard || c.hardQuestion || "",
+            hard_answer: c.hard_answer || c.correct_answer_hard || c.hardAnswer || c.answer_hard || "",
+            hard_fact: c.hard_fact || c.fact_hard || c.hardFact || "",
           };
         });
         setEasyHardCards(fullCards);
+      } else {
+        setEasyHardCards(getDefaultEasyHardCards());
       }
       setActiveCardTab(0);
     } else if (round.type === "youtube_comments" || round.type === "comments") {
@@ -1179,7 +1195,7 @@ export default function AdminPage() {
                           <div className="min-w-0 flex-1">
                             <span className="text-xs sm:text-sm font-black text-white block truncate">
                               {round.type === "easy_hard" || round.type === "pidstava"
-                                ? `Підстава (${(round.cards || round.data?.cards || []).length} тем)`
+                                ? `Підстава (${(round.cards || round.data?.cards || round.topics || round.data?.topics || round.themes || round.data?.themes || []).length} тем)`
                                 : round.type === "youtube_comments" || round.type === "comments"
                                   ? `Коментарі (${(round.comment_games || round.data?.games || []).length} гри)`
                                   : round.type === "blitz_5sec" || round.type === "blitz_5_10"
@@ -1213,8 +1229,8 @@ export default function AdminPage() {
                             type="button"
                             onClick={() => handleEditRound(round, idx)}
                             className={`w-9 h-9 p-2 rounded-lg border transition cursor-pointer flex items-center justify-center touch-manipulation active:scale-95 ${editingRoundId === round.id
-                                ? "bg-amber-500/20 border-amber-500 text-amber-400 ring-1 ring-amber-500/50"
-                                : "bg-zinc-800 border-zinc-700 text-zinc-200 hover:text-amber-400 hover:border-amber-500/40 active:bg-zinc-700"
+                              ? "bg-amber-500/20 border-amber-500 text-amber-400 ring-1 ring-amber-500/50"
+                              : "bg-zinc-800 border-zinc-700 text-zinc-200 hover:text-amber-400 hover:border-amber-500/40 active:bg-zinc-700"
                               }`}
                             title="Редагувати / Переглянути раунд"
                           >

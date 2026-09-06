@@ -71,8 +71,10 @@ export interface Round {
   type: RoundType;
   order_index: number;
 
-  // Раунд 1: Підстава (8 карток)
+  // Раунд 1: Підстава (8 карток / тем)
   cards?: PidstavaCard[];
+  topics?: (PidstavaCard | any)[];
+  themes?: (PidstavaCard | any)[];
 
   // Раунд 2: Коментарі (4 гри)
   comment_games?: CommentGame[];

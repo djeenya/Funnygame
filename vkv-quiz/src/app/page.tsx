@@ -444,7 +444,15 @@ export default function GamePage() {
       const normalizedRounds: Round[] = (data || []).map((r: any) => ({
         ...r,
         ...(r.data || {}),
-        cards: r.cards || r.data?.cards || [],
+        cards:
+          r.cards ||
+          r.data?.cards ||
+          r.topics ||
+          r.data?.topics ||
+          r.themes ||
+          r.data?.themes ||
+          (r.type === "pidstava" || r.type === "easy_hard" ? r.questions || r.data?.questions : []) ||
+          [],
         comment_games: r.comment_games || r.data?.comment_games || r.data?.games || r.games || [],
         games: r.games || r.data?.games || r.data?.comment_games || r.comment_games || [],
         blitz_questions: r.blitz_questions || r.data?.blitz_questions || r.data?.questions || r.questions || [],
@@ -817,7 +825,11 @@ export default function GamePage() {
         ? round.cards
         : (round.data?.cards && round.data.cards.length > 0)
           ? round.data.cards
-          : DEFAULT_PIDSTAVA_CARDS;
+          : (round.topics && round.topics.length > 0)
+            ? round.topics
+            : (round.data?.topics && round.data.topics.length > 0)
+              ? round.data.topics
+              : DEFAULT_PIDSTAVA_CARDS;
 
     const isAllCardsPlayed = easyHardPlayedIndices.length >= cards.length;
     const opponentTeam = easyHardChoosingTeam === "team1" ? "team2" : "team1";
