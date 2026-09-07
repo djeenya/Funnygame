@@ -34,6 +34,7 @@ import {
   ArrowRight,
   ArrowLeft,
   AlertCircle,
+  LogOut,
 } from "lucide-react";
 
 // Web Audio API procedural sound synthesizer
@@ -81,6 +82,8 @@ function shuffleArray<T>(array: T[]): T[] {
   }
   return arr;
 }
+
+const STORAGE_KEY = 'funnygame_active_session';
 
 // Fallback demo data for Round 1: Підстава (8 карток з окремими фактами)
 const DEFAULT_PIDSTAVA_CARDS: PidstavaCard[] = [
@@ -398,6 +401,156 @@ export default function GamePage() {
     localStorage.setItem("vkv_scores", JSON.stringify(scores));
   }, [scores]);
 
+  const [sessionRestored, setSessionRestored] = useState<boolean>(false);
+
+  // Restore Active Game Session from LocalStorage on initial mount
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const rawSession = localStorage.getItem(STORAGE_KEY);
+        if (rawSession) {
+          const session = JSON.parse(rawSession);
+          if (session && session.gameState === "playing" && session.selectedGameId) {
+            if (session.selectedGameId) setSelectedGameId(session.selectedGameId);
+            if (session.selectedGame) setSelectedGame(session.selectedGame);
+            if (session.gameSettings) setGameSettings(session.gameSettings);
+            if (session.scores) setScores(session.scores);
+            if (Array.isArray(session.rounds) && session.rounds.length > 0) {
+              setRounds(session.rounds);
+            }
+            if (typeof session.currentRoundIndex === "number") {
+              setCurrentRoundIndex(session.currentRoundIndex);
+            }
+            if (session.tieBreakerTeam) setTieBreakerTeam(session.tieBreakerTeam);
+
+            // Round 1 States
+            if (session.easyHardActiveCardIdx !== undefined) setEasyHardActiveCardIdx(session.easyHardActiveCardIdx);
+            if (session.easyHardDifficulty !== undefined) setEasyHardDifficulty(session.easyHardDifficulty);
+            if (Array.isArray(session.easyHardPlayedIndices)) setEasyHardPlayedIndices(session.easyHardPlayedIndices);
+            if (session.easyHardChoosingTeam) setEasyHardChoosingTeam(session.easyHardChoosingTeam);
+            if (session.easyHardJudgmentGiven !== undefined) setEasyHardJudgmentGiven(session.easyHardJudgmentGiven);
+
+            // Round 2 States
+            if (typeof session.commentsGameIndex === "number") setCommentsGameIndex(session.commentsGameIndex);
+            if (typeof session.commentsRevealedCount === "number") setCommentsRevealedCount(session.commentsRevealedCount);
+            if (Array.isArray(session.commentsEliminatedOptions)) setCommentsEliminatedOptions(session.commentsEliminatedOptions);
+            if (session.commentsSelectedOption !== undefined) setCommentsSelectedOption(session.commentsSelectedOption);
+            if (typeof session.commentsGameFinished === "boolean") setCommentsGameFinished(session.commentsGameFinished);
+            if (session.commentsPointsEarned !== undefined) setCommentsPointsEarned(session.commentsPointsEarned);
+            if (Array.isArray(session.shuffledVideoOptions)) setShuffledVideoOptions(session.shuffledVideoOptions);
+
+            // Round 3 States
+            if (typeof session.blitzQuestionIndex === "number") setBlitzQuestionIndex(session.blitzQuestionIndex);
+            if (typeof session.blitz10TimeLeft === "number") setBlitz10TimeLeft(session.blitz10TimeLeft);
+            if (session.blitzScores && typeof session.blitzScores === "object") setBlitzScores(session.blitzScores);
+            setBlitz10TimerActive(false);
+
+            // Round 4 States
+            if (typeof session.aliasTurnIndex === "number") setAliasTurnIndex(session.aliasTurnIndex);
+            if (typeof session.aliasTimeLeft === "number") setAliasTimeLeft(session.aliasTimeLeft);
+            if (typeof session.aliasGuessedCount === "number") setAliasGuessedCount(session.aliasGuessedCount);
+            if (typeof session.aliasSkippedCount === "number") setAliasSkippedCount(session.aliasSkippedCount);
+            if (session.aliasTurnSummaryModal !== undefined) setAliasTurnSummaryModal(session.aliasTurnSummaryModal);
+            setAliasTimerActive(false);
+
+            // Activate game directly in playing state
+            setGameState("playing");
+          }
+        }
+      } catch (err) {
+        console.error("Session restore error:", err);
+      } finally {
+        setSessionRestored(true);
+      }
+    } else {
+      setSessionRestored(true);
+    }
+  }, []);
+
+  // Save Active Game Session to LocalStorage whenever playing state changes
+  useEffect(() => {
+    if (typeof window !== "undefined" || !sessionRestored) return;
+
+    if (gameState === "playing" && selectedGameId) {
+      try {
+        const sessionData = {
+          gameState: "playing",
+          selectedGameId,
+          selectedGame,
+          gameSettings,
+          scores,
+          rounds,
+          currentRoundIndex,
+          tieBreakerTeam,
+          // Round 1
+          easyHardActiveCardIdx,
+          easyHardDifficulty,
+          easyHardPlayedIndices,
+          easyHardChoosingTeam,
+          easyHardJudgmentGiven,
+          // Round 2
+          commentsGameIndex,
+          commentsRevealedCount,
+          commentsEliminatedOptions,
+          commentsSelectedOption,
+          commentsGameFinished,
+          commentsPointsEarned,
+          shuffledVideoOptions,
+          // Round 3
+          blitzQuestionIndex,
+          blitz10TimeLeft,
+          blitzScores,
+          // Round 4
+          aliasTurnIndex,
+          aliasTimeLeft,
+          aliasGuessedCount,
+          aliasSkippedCount,
+          aliasTurnSummaryModal,
+          savedAt: new Date().toISOString(),
+        };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(sessionData));
+      } catch (err) {
+        console.error("Session auto-save error:", err);
+      }
+    } else if (gameState === "select_game" || gameState === "finished") {
+      try {
+        localStorage.removeItem(STORAGE_KEY);
+      } catch (err) {
+        console.error("Session remove error:", err);
+      }
+    }
+  }, [
+    sessionRestored,
+    gameState,
+    selectedGameId,
+    selectedGame,
+    gameSettings,
+    scores,
+    rounds,
+    currentRoundIndex,
+    tieBreakerTeam,
+    easyHardActiveCardIdx,
+    easyHardDifficulty,
+    easyHardPlayedIndices,
+    easyHardChoosingTeam,
+    easyHardJudgmentGiven,
+    commentsGameIndex,
+    commentsRevealedCount,
+    commentsEliminatedOptions,
+    commentsSelectedOption,
+    commentsGameFinished,
+    commentsPointsEarned,
+    shuffledVideoOptions,
+    blitzQuestionIndex,
+    blitz10TimeLeft,
+    blitzScores,
+    aliasTurnIndex,
+    aliasTimeLeft,
+    aliasGuessedCount,
+    aliasSkippedCount,
+    aliasTurnSummaryModal,
+  ]);
+
   // Fetch Games on Mount
   useEffect(() => {
     fetchGames();
@@ -417,10 +570,17 @@ export default function GamePage() {
       if (error) throw error;
       setGames(data || []);
       if (data && data.length > 0) {
-        const firstGame = data[0];
-        setSelectedGameId(firstGame.id);
-        setSelectedGame(firstGame);
-        await fetchRoundsForGame(firstGame.id);
+        setSelectedGameId((currentId) => {
+          if (currentId) {
+            const found = data.find((g) => g.id === currentId);
+            if (found) setSelectedGame(found);
+            return currentId;
+          }
+          const firstGame = data[0];
+          setSelectedGame(firstGame);
+          fetchRoundsForGame(firstGame.id);
+          return firstGame.id;
+        });
       }
     } catch (err: any) {
       console.error("fetchGames error:", err);
@@ -471,6 +631,13 @@ export default function GamePage() {
   const handleSelectGame = async (game: Game) => {
     setSelectedGameId(game.id);
     setSelectedGame(game);
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.removeItem(STORAGE_KEY);
+      } catch (e) {
+        console.error(e);
+      }
+    }
     await fetchRoundsForGame(game.id);
   };
 
@@ -638,9 +805,35 @@ export default function GamePage() {
   };
 
   const handleStartNewGame = () => {
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.removeItem(STORAGE_KEY);
+      } catch (e) {
+        console.error(e);
+      }
+    }
     resetScores(true);
     setCurrentRoundIndex(0);
     resetRoundStates();
+    setSetupStep("select_game");
+    setGameState("select_game");
+  };
+
+  const handleExitToMenu = () => {
+    if (typeof window !== "undefined") {
+      const confirmed = window.confirm(
+        "Завершити поточну гру та повернутися в меню? Весь прогрес буде втрачено."
+      );
+      if (!confirmed) return;
+      try {
+        localStorage.removeItem(STORAGE_KEY);
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    setEditingSettingsModal(false);
+    resetRoundStates();
+    resetScores(true);
     setSetupStep("select_game");
     setGameState("select_game");
   };
@@ -650,6 +843,13 @@ export default function GamePage() {
       setCurrentRoundIndex((prev) => prev + 1);
       resetRoundStates();
     } else {
+      if (typeof window !== "undefined") {
+        try {
+          localStorage.removeItem(STORAGE_KEY);
+        } catch (e) {
+          console.error(e);
+        }
+      }
       setGameState("finished");
     }
   };
@@ -2194,6 +2394,18 @@ export default function GamePage() {
                   <span className="truncate">{gameSettings.team2.name}</span>
                 </button>
               </div>
+            </div>
+
+            {/* Emergency Exit to Menu */}
+            <div className="pt-2 border-t border-zinc-800/80">
+              <button
+                type="button"
+                onClick={handleExitToMenu}
+                className="w-full py-2.5 px-4 min-h-[42px] rounded-xl bg-rose-950/20 hover:bg-rose-950/40 text-rose-400 hover:text-rose-300 border border-rose-500/30 text-xs font-bold transition flex items-center justify-center gap-2 cursor-pointer active:scale-95 touch-manipulation"
+              >
+                <LogOut size={14} />
+                <span>Вийти в головне меню (завершити поточну гру)</span>
+              </button>
             </div>
 
             <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2 border-t border-zinc-800">
