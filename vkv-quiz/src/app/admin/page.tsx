@@ -258,7 +258,8 @@ function normalizePidstavaCard(c: any, i: number): PidstavaCard {
   };
 }
 
-const ROUND_DRAFT_KEY = "vkv_round_draft";
+const SELECTED_GAME_KEY = "vkv_admin_selected_game_id";
+const DRAFT_KEY = "vkv_admin_round_draft";
 
 const getDefaultEasyHardCards = (): PidstavaCard[] =>
   Array.from({ length: 8 }, (_, i) => createEmptyCard(i));
@@ -310,18 +311,36 @@ export default function AdminPage() {
   const [editingRoundName, setEditingRoundName] = useState<string>("");
   const formRef = useRef<HTMLDivElement | null>(null);
 
+  // Helper to safely select game and persist its ID in localStorage
+  const handleSelectGame = (game: Game) => {
+    if (selectedGame?.id !== game.id) {
+      setEditingRoundId(null);
+      setEditingRoundName("");
+    }
+    setSelectedGame(game);
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.setItem(SELECTED_GAME_KEY, game.id);
+      } catch (e) {
+        console.error("Помилка збереження вибраної гри:", e);
+      }
+    }
+  };
+
   // Restore draft from localStorage on initial mount
   useEffect(() => {
     if (typeof window !== "undefined") {
       try {
-        const rawDraft = localStorage.getItem(ROUND_DRAFT_KEY);
+        const rawDraft = localStorage.getItem(DRAFT_KEY);
         if (rawDraft) {
           const draft = JSON.parse(rawDraft);
           if (draft.roundType) setRoundType(draft.roundType);
           if (typeof draft.activeCardTab === "number") setActiveCardTab(draft.activeCardTab);
           if (typeof draft.activeCommentTab === "number") setActiveCommentTab(draft.activeCommentTab);
           if (Array.isArray(draft.easyHardCards) && draft.easyHardCards.length > 0) {
-            const restoredCards = Array.from({ length: 8 }, (_, i) => draft.easyHardCards[i] || createEmptyCard(i));
+            const restoredCards = Array.from({ length: 8 }, (_, i) =>
+              draft.easyHardCards[i] ? normalizePidstavaCard(draft.easyHardCards[i], i) : createEmptyCard(i)
+            );
             setEasyHardCards(restoredCards);
           }
           if (Array.isArray(draft.commentGames) && draft.commentGames.length === 4) {
@@ -333,6 +352,8 @@ export default function AdminPage() {
           if (draft.aliasForm && typeof draft.aliasForm.question === "string") {
             setAliasForm(draft.aliasForm);
           }
+          if (draft.editingRoundId) setEditingRoundId(draft.editingRoundId);
+          if (draft.editingRoundName) setEditingRoundName(draft.editingRoundName);
         }
       } catch (err) {
         console.error("Помилка відновлення чернетки раунду:", err);
@@ -356,9 +377,11 @@ export default function AdminPage() {
         commentGames,
         blitzQuestions,
         aliasForm,
+        editingRoundId,
+        editingRoundName,
         savedAt: new Date().toISOString(),
       };
-      localStorage.setItem(ROUND_DRAFT_KEY, JSON.stringify(draftData));
+      localStorage.setItem(DRAFT_KEY, JSON.stringify(draftData));
     } catch (err) {
       console.error("Помилка автозбереження чернетки раунду:", err);
     }
@@ -371,6 +394,8 @@ export default function AdminPage() {
     commentGames,
     blitzQuestions,
     aliasForm,
+    editingRoundId,
+    editingRoundName,
   ]);
 
   const handleResetRoundForm = (showConfirm = false) => {
@@ -387,7 +412,7 @@ export default function AdminPage() {
     setBlitzQuestions(getDefaultBlitzQuestions());
     setAliasForm(getDefaultAliasForm());
     if (typeof window !== "undefined") {
-      localStorage.removeItem(ROUND_DRAFT_KEY);
+      localStorage.removeItem(DRAFT_KEY);
     }
     if (showConfirm) {
       setSuccessMessage("Чернетку форми успішно очищено!");
@@ -408,8 +433,6 @@ export default function AdminPage() {
   useEffect(() => {
     if (selectedGame) {
       fetchRounds(selectedGame.id);
-      setEditingRoundId(null);
-      setEditingRoundName("");
     } else {
       setRounds([]);
     }
@@ -437,9 +460,42 @@ export default function AdminPage() {
       setLoadingGames(true);
       const { data, error } = await supabase.from("games").select("*").order("created_at", { ascending: false });
       if (error) throw error;
-      setGames(data || []);
-      if (data && data.length > 0 && !selectedGame) {
-        setSelectedGame(data[0]);
+      const gameList: Game[] = data || [];
+      setGames(gameList);
+      if (gameList.length > 0) {
+        let savedGameId: string | null = null;
+        if (typeof window !== "undefined") {
+          try {
+            savedGameId = localStorage.getItem(SELECTED_GAME_KEY);
+          } catch (e) {
+            console.error("Помилка читання збереженої гри:", e);
+          }
+        }
+
+        let targetGame: Game | undefined;
+        if (savedGameId) {
+          targetGame = gameList.find((g) => g.id === savedGameId);
+        }
+        if (!targetGame && selectedGame) {
+          targetGame = gameList.find((g) => g.id === selectedGame.id);
+        }
+        if (!targetGame) {
+          targetGame = gameList[0];
+        }
+
+        setSelectedGame(targetGame);
+        if (typeof window !== "undefined" && targetGame) {
+          try {
+            localStorage.setItem(SELECTED_GAME_KEY, targetGame.id);
+          } catch (e) { }
+        }
+      } else {
+        setSelectedGame(null);
+        if (typeof window !== "undefined") {
+          try {
+            localStorage.removeItem(SELECTED_GAME_KEY);
+          } catch (e) { }
+        }
       }
     } catch (err: any) {
       console.error("fetchGames error:", err);
@@ -507,7 +563,7 @@ export default function AdminPage() {
       setSuccessMessage("Гру успішно створено!");
       await fetchGames();
       if (data && data[0]) {
-        setSelectedGame(data[0]);
+        handleSelectGame(data[0]);
         await fetchRounds(data[0].id);
       }
     } catch (err: any) {
@@ -585,7 +641,7 @@ export default function AdminPage() {
 
       setSuccessMessage(`Готову демо-гру "${gameTitle}" з 4 раундами успішно створено!`);
       await fetchGames();
-      setSelectedGame(newGame);
+      handleSelectGame(newGame);
       await fetchRounds(newGame.id);
     } catch (err: any) {
       console.error("handleCreateDemoGame error:", err);
@@ -658,7 +714,14 @@ export default function AdminPage() {
     try {
       const { error } = await supabase.from("games").delete().eq("id", gameId);
       if (error) throw error;
-      if (selectedGame?.id === gameId) setSelectedGame(null);
+      if (selectedGame?.id === gameId) {
+        setSelectedGame(null);
+        if (typeof window !== "undefined") {
+          try {
+            localStorage.removeItem(SELECTED_GAME_KEY);
+          } catch (e) { }
+        }
+      }
       await fetchGames();
     } catch (err: any) {
       console.error("handleDeleteGame error:", err);
@@ -877,6 +940,9 @@ export default function AdminPage() {
       if (error) throw error;
 
       setSuccessMessage("Зміни у раунді успішно збережено!");
+      setEditingRoundId(null);
+      setEditingRoundName("");
+      handleResetRoundForm(false);
       await fetchRounds(selectedGame.id);
     } catch (err: any) {
       console.error("handleUpdateRound error:", err);
@@ -1155,7 +1221,7 @@ export default function AdminPage() {
                   className={`flex items-center justify-between p-3 rounded-xl border transition ${selectedGame?.id === g.id ? "bg-indigo-950/30 border-indigo-500/60" : "bg-zinc-950/40 border-zinc-800 hover:border-zinc-700"
                     }`}
                 >
-                  <button onClick={() => setSelectedGame(g)} className="flex-grow text-left truncate cursor-pointer py-1">
+                  <button onClick={() => handleSelectGame(g)} className="flex-grow text-left truncate cursor-pointer py-1">
                     <h4 className={`text-xs font-extrabold ${selectedGame?.id === g.id ? "text-indigo-400" : "text-zinc-200"}`}>
                       {g.name}
                     </h4>
